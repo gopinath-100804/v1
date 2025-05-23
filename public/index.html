@@ -1,0 +1,585 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ERIX STUDIOS - Video Conferencing</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    .video-container {
+      position: relative;
+      width: 100%;
+      height: 0;
+      padding-bottom: 56.25%; /* 16:9 aspect ratio */
+      background-color: #1a202c;
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    .video-container video {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .participant-tile {
+      position: relative;
+      width: 100%;
+      height: 0;
+      padding-bottom: 56.25%;
+      background-color: #2d3748;
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    .participant-tile video {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .participant-name {
+      position: absolute;
+      bottom: 8px;
+      left: 8px;
+      background-color: rgba(0, 0, 0, 0.5);
+      color: white;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 12px;
+    }
+    .participant-controls {
+      position: absolute;
+      bottom: 8px;
+      right: 8px;
+      display: flex;
+      gap: 4px;
+    }
+    .chat-message {
+      animation: fadeIn 0.3s ease-in-out;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .screen-share-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.8);
+      z-index: 1000;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+    .screen-share-video {
+      width: 90%;
+      height: 80%;
+      background-color: black;
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    .screen-share-video video {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+    }
+    .reaction-animation {
+      position: absolute;
+      animation: floatUp 2s ease-in-out forwards;
+      font-size: 24px;
+      z-index: 10;
+    }
+    @keyframes floatUp {
+      0% { transform: translateY(0) scale(1); opacity: 1; }
+      100% { transform: translateY(-100px) scale(0.5); opacity: 0; }
+    }
+    .blur-background {
+      filter: blur(5px);
+    }
+    .sidebar {
+      transition: transform 0.3s ease-in-out;
+    }
+    .sidebar-hidden {
+      transform: translateX(100%);
+    }
+    .home-screen {
+      background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 100%);
+    }
+    .meeting-card {
+      transition: all 0.3s ease;
+    }
+    .meeting-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+    }
+    .floating-button {
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.3);
+      transition: all 0.3s ease;
+    }
+    .floating-button:hover {
+      transform: scale(1.05);
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+    }
+    .invite-friends-modal {
+      animation: modalFadeIn 0.3s ease-out;
+    }
+    @keyframes modalFadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .background-pattern {
+      background-image: radial-gradient(circle, rgba(255,255,255,0.1) 1px, transparent 1px);
+      background-size: 20px 20px;
+    }
+    .pulse-animation {
+      animation: pulse 2s infinite;
+    }
+    @keyframes pulse {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+      100% { transform: scale(1); }
+    }
+    .typing-indicator {
+      display: flex;
+      align-items: center;
+    }
+    .typing-dot {
+      width: 6px;
+      height: 6px;
+      background-color: #9ca3af;
+      border-radius: 50%;
+      margin: 0 2px;
+      animation: typingAnimation 1.4s infinite ease-in-out;
+    }
+    .typing-dot:nth-child(1) {
+      animation-delay: 0s;
+    }
+    .typing-dot:nth-child(2) {
+      animation-delay: 0.2s;
+    }
+    .typing-dot:nth-child(3) {
+      animation-delay: 0.4s;
+    }
+    @keyframes typingAnimation {
+      0%, 60%, 100% { transform: translateY(0); }
+      30% { transform: translateY(-5px); }
+    }
+    .logo-text {
+      font-family: 'Arial', sans-serif;
+      font-weight: 800;
+      letter-spacing: 1px;
+      background: linear-gradient(90deg, #3b82f6, #8b5cf6);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+    .glow-text {
+      text-shadow: 0 0 10px rgba(99, 102, 241, 0.5);
+    }
+  </style>
+</head>
+<body class="bg-gray-900 text-white h-screen flex flex-col">
+  <!-- Home Screen -->
+  <div class="fixed inset-0 home-screen background-pattern flex flex-col items-center justify-center z-50" id="home-screen">
+    <div class="text-center mb-12">
+      <div class="flex items-center justify-center mb-6">
+        <i class="fas fa-video text-blue-300 text-5xl mr-4"></i>
+        <h1 class="text-5xl font-bold logo-text glow-text">ERIX STUDIOS</h1>
+      </div>
+      <p class="text-xl text-blue-100 max-w-lg mx-auto mb-8">Premium video conferencing for creative teams. Connect, collaborate, and create together.</p>
+    </div>
+
+    <div class="w-full max-w-4xl px-4">
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+        <div class="meeting-card bg-gray-800 bg-opacity-50 backdrop-blur-sm rounded-xl p-6 border border-gray-700">
+          <div class="flex items-center mb-4">
+            <div class="w-12 h-12 rounded-full bg-blue-500 flex items-center justify-center mr-3">
+              <i class="fas fa-video text-white text-xl"></i>
+            </div>
+            <h3 class="text-lg font-semibold">New Meeting</h3>
+          </div>
+          <p class="text-gray-300 mb-4">Start an instant meeting with video and audio</p>
+          <button class="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-lg flex items-center justify-center" id="new-meeting-btn">
+            <i class="fas fa-plus mr-2"></i> New Meeting
+          </button>
+        </div>
+
+        <div class="meeting-card bg-gray-800 bg-opacity-50 backdrop-blur-sm rounded-xl p-6 border border-gray-700">
+          <div class="flex items-center mb-4">
+            <div class="w-12 h-12 rounded-full bg-purple-500 flex items-center justify-center mr-3">
+              <i class="fas fa-key text-white text-xl"></i>
+            </div>
+            <h3 class="text-lg font-semibold">Join Meeting</h3>
+          </div>
+          <p class="text-gray-300 mb-4">Enter a meeting ID or link to join a session</p>
+          <button class="w-full bg-gray-700 hover:bg-gray-600 text-white py-2 px-4 rounded-lg flex items-center justify-center" id="join-meeting-home-btn">
+            <i class="fas fa-sign-in-alt mr-2"></i> Join
+          </button>
+        </div>
+
+        <div class="meeting-card bg-gray-800 bg-opacity-50 backdrop-blur-sm rounded-xl p-6 border border-gray-700">
+          <div class="flex items-center mb-4">
+            <div class="w-12 h-12 rounded-full bg-green-500 flex items-center justify-center mr-3">
+              <i class="fas fa-calendar-alt text-white text-xl"></i>
+            </div>
+            <h3 class="text-lg font-semibold">Schedule</h3>
+          </div>
+          <p class="text-gray-300 mb-4">Plan a meeting for later with calendar integration</p>
+          <button class="w-full bg-gray-700 hover:bg-gray-600 text-white py-2 px-4 rounded-lg flex items-center justify-center" id="schedule-meeting-btn">
+            <i class="fas fa-clock mr-2"></i> Schedule
+          </button>
+        </div>
+      </div>
+
+      <div class="bg-gray-800 bg-opacity-50 backdrop-blur-sm rounded-xl p-6 border border-gray-700 max-w-2xl mx-auto">
+        <h3 class="text-lg font-semibold mb-4 text-center">Your Recent Meetings</h3>
+        <div class="space-y-3" id="recent-meetings">
+          <div class="flex items-center justify-between p-3 hover:bg-gray-700 rounded-lg cursor-pointer">
+            <div class="flex items-center">
+              <div class="w-10 h-10 rounded-full bg-blue-500 flex items-center justify-center mr-3">
+                <i class="fas fa-users text-white"></i>
+              </div>
+              <div>
+                <h4 class="font-medium">Creative Review</h4>
+                <p class="text-xs text-gray-400">Today, 10:00 AM</p>
+              </div>
+            </div>
+            <button class="text-blue-400 hover:text-blue-300">
+              <i class="fas fa-arrow-right"></i>
+            </button>
+          </div>
+          <div class="flex items-center justify-between p-3 hover:bg-gray-700 rounded-lg cursor-pointer">
+            <div class="flex items-center">
+              <div class="w-10 h-10 rounded-full bg-purple-500 flex items-center justify-center mr-3">
+                <i class="fas fa-users text-white"></i>
+              </div>
+              <div>
+                <h4 class="font-medium">Client Presentation</h4>
+                <p class="text-xs text-gray-400">Yesterday, 2:30 PM</p>
+              </div>
+            </div>
+            <button class="text-blue-400 hover:text-blue-300">
+              <i class="fas fa-arrow-right"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="absolute bottom-8 right-8">
+      <button class="floating-button w-14 h-14 rounded-full bg-blue-600 hover:bg-blue-700 text-white flex items-center justify-center text-xl" id="invite-friends-btn">
+        <i class="fas fa-user-plus"></i>
+      </button>
+    </div>
+  </div>
+
+  <!-- Invite Friends Modal -->
+  <div class="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 hidden" id="invite-friends-modal">
+    <div class="bg-gray-800 rounded-xl p-6 w-full max-w-md invite-friends-modal">
+      <div class="flex justify-between items-center mb-4">
+        <h2 class="text-xl font-bold">Invite Friends</h2>
+        <button class="text-gray-400 hover:text-white" id="close-invite-modal">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+
+      <div class="mb-4">
+        <label class="block text-sm font-medium mb-2">Meeting Link</label>
+        <div class="flex">
+          <input type="text" class="flex-1 bg-gray-700 border border-gray-600 rounded-l px-3 py-2 text-sm" readonly id="meeting-link">
+          <button class="bg-blue-600 hover:bg-blue-700 px-3 py-2 rounded-r text-sm" id="copy-meeting-link">
+            <i class="fas fa-copy"></i>
+          </button>
+        </div>
+      </div>
+
+      <div class="mb-4">
+        <label class="block text-sm font-medium mb-2">Invite via Email</label>
+        <div class="flex space-x-2">
+          <input type="email" placeholder="Enter email addresses" class="flex-1 bg-gray-700 border border-gray-600 rounded px-3 py-2 text-sm" id="invite-emails">
+          <button class="bg-blue-600 hover:bg-blue-700 px-3 py-2 rounded text-sm" id="send-invites">
+            <i class="fas fa-paper-plane"></i>
+          </button>
+        </div>
+        <p class="text-xs text-gray-400 mt-1">Separate multiple emails with commas</p>
+      </div>
+
+      <div>
+        <h3 class="text-sm font-medium mb-2">Quick Share</h3>
+        <div class="grid grid-cols-4 gap-2">
+          <button class="p-2 bg-gray-700 hover:bg-gray-600 rounded flex flex-col items-center justify-center text-xs" id="share-whatsapp">
+            <i class="fab fa-whatsapp text-green-400 text-lg mb-1"></i>
+            WhatsApp
+          </button>
+          <button class="p-2 bg-gray-700 hover:bg-gray-600 rounded flex flex-col items-center justify-center text-xs" id="share-email">
+            <i class="fas fa-envelope text-blue-400 text-lg mb-1"></i>
+            Email
+          </button>
+          <button class="p-2 bg-gray-700 hover:bg-gray-600 rounded flex flex-col items-center justify-center text-xs" id="share-sms">
+            <i class="fas fa-sms text-yellow-400 text-lg mb-1"></i>
+            SMS
+          </button>
+          <button class="p-2 bg-gray-700 hover:bg-gray-600 rounded flex flex-col items-center justify-center text-xs" id="share-copy">
+            <i class="fas fa-copy text-gray-400 text-lg mb-1"></i>
+            Copy
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Join Meeting Modal -->
+  <div class="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 hidden" id="join-meeting-modal">
+    <div class="bg-gray-800 rounded-lg p-6 w-full max-w-md">
+      <h2 class="text-xl font-bold mb-4">Join Meeting</h2>
+      <div class="mb-4">
+        <label class="block text-sm font-medium mb-1">Meeting ID</label>
+        <input type="text" class="w-full bg-gray-700 border border-gray-600 rounded px-3 py-2" id="join-meeting-id">
+      </div>
+      <div class="mb-4">
+        <label class="block text-sm font-medium mb-1">Your Name</label>
+        <input type="text" class="w-full bg-gray-700 border border-gray-600 rounded px-3 py-2" id="participant-name" placeholder="Enter your name">
+      </div>
+      <div class="mb-4">
+        <label class="flex items-center space-x-2">
+          <input type="checkbox" class="rounded bg-gray-700 border-gray-600" id="join-with-video" checked>
+          <span>Join with video</span>
+        </label>
+      </div>
+      <div class="flex justify-end space-x-2">
+        <button class="px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded" id="cancel-join">
+          Cancel
+        </button>
+        <button class="px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded" id="confirm-join">
+          Join
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Schedule Meeting Modal -->
+  <div class="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 hidden" id="schedule-meeting-modal">
+    <div class="bg-gray-800 rounded-lg p-6 w-full max-w-md">
+      <h2 class="text-xl font-bold mb-4">Schedule Meeting</h2>
+      <div class="mb-4">
+        <label class="block text-sm font-medium mb-1">Meeting Title</label>
+        <input type="text" class="w-full bg-gray-700 border border-gray-600 rounded px-3 py-2" id="schedule-title" placeholder="Creative Review">
+      </div>
+      <div class="grid grid-cols-2 gap-4 mb-4">
+        <div>
+          <label class="block text-sm font-medium mb-1">Date</label>
+          <input type="date" class="w-full bg-gray-700 border border-gray-600 rounded px-3 py-2" id="schedule-date">
+        </div>
+        <div>
+          <label class="block text-sm font-medium mb-1">Time</label>
+          <input type="time" class="w-full bg-gray-700 border border-gray-600 rounded px-3 py-2" id="schedule-time">
+        </div>
+      </div>
+      <div class="mb-4">
+        <label class="block text-sm font-medium mb-1">Duration</label>
+        <select class="w-full bg-gray-700 border border-gray-600 rounded px-3 py-2" id="schedule-duration">
+          <option>30 minutes</option>
+          <option>1 hour</option>
+          <option>1.5 hours</option>
+          <option>2 hours</option>
+        </select>
+      </div>
+      <div class="mb-4">
+        <label class="block text-sm font-medium mb-1">Invitees</label>
+        <input type="text" class="w-full bg-gray-700 border border-gray-600 rounded px-3 py-2" id="schedule-invitees" placeholder="Enter email addresses">
+      </div>
+      <div class="flex justify-end space-x-2">
+        <button class="px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded" id="cancel-schedule">
+          Cancel
+        </button>
+        <button class="px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded" id="confirm-schedule">
+          Schedule
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Notification Toast -->
+  <div class="fixed bottom-4 right-4 bg-gray-800 text-white px-4 py-2 rounded-lg shadow-lg text-sm hidden" id="notification-toast">
+    <div class="flex items-center">
+      <i class="fas fa-check-circle text-green-400 mr-2"></i>
+      <span id="notification-message">Meeting link copied to clipboard</span>
+    </div>
+  </div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script>
+    const socket = io();
+    const homeScreen = document.getElementById('home-screen');
+    const newMeetingBtn = document.getElementById('new-meeting-btn');
+    const joinMeetingHomeBtn = document.getElementById('join-meeting-home-btn');
+    const scheduleMeetingBtn = document.getElementById('schedule-meeting-btn');
+    const inviteFriendsBtn = document.getElementById('invite-friends-btn');
+    const inviteFriendsModal = document.getElementById('invite-friends-modal');
+    const closeInviteModal = document.getElementById('close-invite-modal');
+    const meetingLink = document.getElementById('meeting-link');
+    const copyMeetingLink = document.getElementById('copy-meeting-link');
+    const sendInvitesBtn = document.getElementById('send-invites');
+    const inviteEmails = document.getElementById('invite-emails');
+    const shareWhatsapp = document.getElementById('share-whatsapp');
+    const shareEmail = document.getElementById('share-email');
+    const shareSms = document.getElementById('share-sms');
+    const shareCopy = document.getElementById('share-copy');
+    const joinMeetingModal = document.getElementById('join-meeting-modal');
+    const scheduleMeetingModal = document.getElementById('schedule-meeting-modal');
+    const confirmJoinBtn = document.getElementById('confirm-join');
+    const cancelJoinBtn = document.getElementById('cancel-join');
+    const confirmScheduleBtn = document.getElementById('confirm-schedule');
+    const cancelScheduleBtn = document.getElementById('cancel-schedule');
+    const joinMeetingId = document.getElementById('join-meeting-id');
+    const participantNameInput = document.getElementById('participant-name');
+    const joinWithVideo = document.getElementById('join-with-video');
+    const notificationToast = document.getElementById('notification-toast');
+    const notificationMessage = document.getElementById('notification-message');
+
+    // Initialize
+    function init() {
+      newMeetingBtn.addEventListener('click', startNewMeeting);
+      joinMeetingHomeBtn.addEventListener('click', showJoinMeetingModal);
+      scheduleMeetingBtn.addEventListener('click', showScheduleMeetingModal);
+      inviteFriendsBtn.addEventListener('click', showInviteFriendsModal);
+      closeInviteModal.addEventListener('click', hideInviteFriendsModal);
+      copyMeetingLink.addEventListener('click', copyMeetingLinkToClipboard);
+      sendInvitesBtn.addEventListener('click', sendEmailInvites);
+      shareWhatsapp.addEventListener('click', shareViaWhatsapp);
+      shareEmail.addEventListener('click', shareViaEmail);
+      shareSms.addEventListener('click', shareViaSms);
+      shareCopy.addEventListener('click', copyMeetingLinkToClipboard);
+      confirmJoinBtn.addEventListener('click', joinMeeting);
+      cancelJoinBtn.addEventListener('click', () => joinMeetingModal.classList.add('hidden'));
+      confirmScheduleBtn.addEventListener('click', scheduleMeeting);
+      cancelScheduleBtn.addEventListener('click', () => scheduleMeetingModal.classList.add('hidden'));
+    }
+
+    // Generate meeting ID
+    function generateMeetingId() {
+      const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+      let result = '';
+      for (let i = 0; i < 9; i++) {
+        result += chars.charAt(Math.floor(Math.random() * chars.length));
+      }
+      return `${result.slice(0, 3)}-${result.slice(3, 6)}-${result.slice(6)}`;
+    }
+
+    // Update meeting link
+    function updateMeetingLink(room = '') {
+      const link = room ? `${window.location.origin}/meeting.html?room=${encodeURIComponent(room)}` : '';
+      meetingLink.value = link;
+    }
+
+    // Start new meeting
+    function startNewMeeting() {
+      const userName = prompt('Enter your name:');
+      if (!userName) return showNotification('Please enter your name.');
+      const room = generateMeetingId();
+      window.location.href = `/meeting.html?room=${encodeURIComponent(room)}&name=${encodeURIComponent(userName)}`;
+    }
+
+    // Show join meeting modal
+    function showJoinMeetingModal() {
+      joinMeetingModal.classList.remove('hidden');
+    }
+
+    // Join meeting
+    function joinMeeting() {
+      const room = joinMeetingId.value.trim();
+      const userName = participantNameInput.value.trim();
+      if (!room || !userName) return showNotification('Please enter meeting ID and name.');
+      socket.emit('check-room', room, (exists) => {
+        if (!exists && !confirm('Room does not exist. Create a new room?')) {
+          showNotification('Room does not exist.');
+          return;
+        }
+        window.location.href = `/meeting.html?room=${encodeURIComponent(room)}&name=${encodeURIComponent(userName)}`;
+      });
+      joinMeetingModal.classList.add('hidden');
+    }
+
+    // Show schedule meeting modal
+    function showScheduleMeetingModal() {
+      scheduleMeetingModal.classList.remove('hidden');
+    }
+
+    // Schedule meeting (placeholder)
+    function scheduleMeeting() {
+      showNotification('Meeting scheduled successfully');
+      scheduleMeetingModal.classList.add('hidden');
+    }
+
+    // Show invite friends modal
+    function showInviteFriendsModal() {
+      updateMeetingLink();
+      inviteFriendsModal.classList.remove('hidden');
+    }
+
+    // Hide invite friends modal
+    function hideInviteFriendsModal() {
+      inviteFriendsModal.classList.add('hidden');
+    }
+
+    // Copy meeting link
+    function copyMeetingLinkToClipboard() {
+      if (!meetingLink.value) return showNotification('No meeting link available');
+      navigator.clipboard.writeText(meetingLink.value)
+        .then(() => showNotification('Meeting link copied to clipboard'))
+        .catch(() => showNotification('Failed to copy meeting link'));
+    }
+
+    // Send email invites (placeholder)
+    function sendEmailInvites() {
+      const emails = inviteEmails.value.trim();
+      if (emails) {
+        showNotification(`Invites sent to: ${emails}`);
+        inviteEmails.value = '';
+        hideInviteFriendsModal();
+      } else {
+        showNotification('Please enter at least one email address');
+      }
+    }
+
+    // Share via WhatsApp (placeholder)
+    function shareViaWhatsapp() {
+      showNotification('Opening WhatsApp to share meeting link');
+    }
+
+    // Share via Email (placeholder)
+    function shareViaEmail() {
+      showNotification('Opening email client to share meeting link');
+    }
+
+    // Share via SMS (placeholder)
+    function shareViaSms() {
+      showNotification('Opening SMS to share meeting link');
+    }
+
+    // Show notification
+    function showNotification(message) {
+      notificationMessage.textContent = message;
+      notificationToast.classList.remove('hidden');
+      setTimeout(() => notificationToast.classList.add('hidden'), 3000);
+    }
+
+    // Check for query parameters and redirect
+    const urlParams = new URLSearchParams(window.location.search);
+    const room = urlParams.get('room');
+    const name = urlParams.get('name');
+    if (room && name) {
+      window.location.href = `/meeting.html?room=${encodeURIComponent(room)}&name=${encodeURIComponent(name)}`;
+    }
+
+    document.addEventListener('DOMContentLoaded', init);
+  </script>
+</body>
+</html>
