@@ -3,11 +3,15 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <meta name="description" content="ERIX Studios Video Conferencing" />
     <title>ERIX STUDIOS - Meeting Room</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+      integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw=="
+      crossorigin="anonymous"
     />
     <style>
       /* Base styles for all devices */
@@ -173,7 +177,7 @@
       }
 
       .sidebar {
-        transition: transform 0.3s ease-in-out;
+        transition: transform 0.3sása ease-in-out;
         width: 80vw;
         max-width: 300px;
         position: fixed;
@@ -530,12 +534,14 @@
         <div class="flex items-center space-x-4">
           <button
             class="hidden md:flex items-center space-x-1 text-sm bg-gray-700 hover:bg-gray-600 px-3 py-1 rounded"
+            id="security-btn"
           >
             <i class="fas fa-shield-alt text-green-400"></i>
             <span>Security</span>
           </button>
           <button
             class="hidden md:flex items-center space-x-1 text-sm bg-gray-700 hover:bg-gray-600 px-3 py-1 rounded"
+            id="settings-btn"
           >
             <i class="fas fa-cog"></i>
             <span>Settings</span>
@@ -595,7 +601,7 @@
 
         <!-- Controls Bar -->
         <div
-          class="bg-gray-800 rounded-lg p-2 mt-2 flex items-center justify-between flex-wrap gap-2"
+          class="bg-gray-800 rounded-lg p-2 mt-2 flex items-center justify-between flex-wrap gap-2 controls-container"
         >
           <div class="flex items-center space-x-2">
             <button
@@ -696,6 +702,7 @@
               </h3>
               <button
                 class="text-xs bg-gray-700 hover:bg-gray-600 px-2 py-1 rounded"
+                id="search-participants"
               >
                 <i class="fas fa-search mr-1"></i>Search
               </button>
@@ -738,7 +745,10 @@
           </div>
           <div class="mt-auto">
             <div class="flex space-x-1">
-              <button class="p-1 rounded-full hover:bg-gray-700">
+              <button
+                class="p-1 rounded-full hover:bg-gray-700"
+                id="attach-file-btn"
+              >
                 <i class="fas fa-paperclip text-sm"></i>
               </button>
               <input
@@ -747,7 +757,10 @@
                 class="flex-1 bg-gray-700 border border-gray-600 rounded-full px-3 py-1 text-sm"
                 id="chat-input"
               />
-              <button class="p-1 rounded-full hover:bg-gray-700">
+              <button
+                class="p-1 rounded-full hover:bg-gray-700"
+                id="emoji-picker-btn"
+              >
                 <i class="far fa-smile text-sm"></i>
               </button>
               <button
@@ -853,27 +866,32 @@
     >
       <div class="space-y-1">
         <button
-          class="w-full text-left px-2 py-1 hover:bg-gray-700 rounded flex items-center text-sm"
+          class="w-full text-left px-2 py-1 hover:bg-gray-600 rounded flex items-center text-sm"
+          id="settings-option"
         >
           <i class="fas fa-cog mr-2 text-sm"></i> Settings
         </button>
         <button
-          class="w-full text-left px-2 py-1 hover:bg-gray-700 rounded flex items-center text-sm"
+          class="w-full text-left px-2 py-1 hover:bg-gray-600 rounded flex items-center text-sm"
+          id="meeting-options"
         >
           <i class="fas fa-user-shield mr-2 text-sm"></i> Meeting options
         </button>
         <button
-          class="w-full text-left px-2 py-1 hover:bg-gray-700 rounded flex items-center text-sm"
+          class="w-full text-left px-2 py-1 hover:bg-gray-600 rounded flex items-center text-sm"
+          id="captions-option"
         >
           <i class="fas fa-closed-captioning mr-2 text-sm"></i> Turn on captions
         </button>
         <button
-          class="w-full text-left px-2 py-1 hover:bg-gray-700 rounded flex items-center text-sm"
+          class="w-full text-left px-2 py-1 hover:bg-gray-600 rounded flex items-center text-sm"
+          id="language-option"
         >
           <i class="fas fa-language mr-2 text-sm"></i> Language interpretation
         </button>
         <button
-          class="w-full text-left px-2 py-1 hover:bg-gray-700 rounded flex items-center text-sm"
+          class="w-full text-left px-2 py-1 hover:bg-gray-600 rounded flex items-center text-sm"
+          id="fullscreen-option"
         >
           <i class="fas fa-expand mr-2 text-sm"></i> Full screen
         </button>
@@ -889,36 +907,42 @@
       <div class="grid grid-cols-3 gap-1 mb-2">
         <button
           class="p-1 bg-gray-700 hover:bg-gray-600 rounded flex flex-col items-center"
+          data-background="none"
         >
           <div class="w-10 h-10 bg-gray-600 rounded mb-1"></div>
           <span class="text-xs">None</span>
         </button>
         <button
           class="p-1 bg-gray-700 hover:bg-gray-600 rounded flex flex-col items-center"
+          data-background="blur"
         >
           <div class="w-10 h-10 bg-blue-600 rounded mb-1"></div>
           <span class="text-xs">Blur</span>
         </button>
         <button
           class="p-1 bg-gray-700 hover:bg-gray-600 rounded flex flex-col items-center"
+          data-background="office"
         >
           <div class="w-10 h-10 bg-green-600 rounded mb-1"></div>
           <span class="text-xs">Office</span>
         </button>
         <button
           class="p-1 bg-gray-700 hover:bg-gray-600 rounded flex flex-col items-center"
+          data-background="beach"
         >
           <div class="w-10 h-10 bg-purple-600 rounded mb-1"></div>
           <span class="text-xs">Beach</span>
         </button>
         <button
           class="p-1 bg-gray-700 hover:bg-gray-600 rounded flex flex-col items-center"
+          data-background="mountains"
         >
           <div class="w-10 h-10 bg-yellow-600 rounded mb-1"></div>
           <span class="text-xs">Mountains</span>
         </button>
         <button
           class="p-1 bg-gray-700 hover:bg-gray-600 rounded flex flex-col items-center"
+          data-background="space"
         >
           <div class="w-10 h-10 bg-red-600 rounded mb-1"></div>
           <span class="text-xs">Space</span>
@@ -926,6 +950,7 @@
       </div>
       <button
         class="w-full text-left px-2 py-1 bg-blue-600 hover:bg-blue-700 rounded text-xs"
+        id="add-background-image"
       >
         <i class="fas fa-plus mr-2"></i> Add Image
       </button>
@@ -975,6 +1000,7 @@
               placeholder="Enter email addresses"
               class="flex-1 bg-gray-700 border border-gray-600 rounded px-2 py-1 text-sm"
               id="invite-emails"
+              multiple
             />
             <button
               class="bg-blue-600 hover:bg-blue-700 px-2 py-1 rounded text-sm"
@@ -1024,257 +1050,378 @@
       </div>
     </div>
 
+    <!-- Username Input Modal -->
+    <div
+      class="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 hidden"
+      id="username-modal"
+    >
+      <div class="bg-gray-800 rounded-lg p-4 w-full max-w-md username-modal">
+        <div class="flex justify-between items-center mb-3">
+          <h2 class="text-lg font-bold">Enter Your Name</h2>
+          <button
+            class="text-gray-400 hover:text-white"
+            id="close-username-modal"
+          >
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+
+        <div class="mb-3">
+          <label class="block text-sm font-medium mb-1">Your Name</label>
+          <div class="flex space-x-1">
+            <input
+              type="text"
+              placeholder="Enter your name"
+              class="flex-1 bg-gray-700 border border-gray-600 rounded px-2 py-1 text-sm"
+              id="username-input"
+              required
+            />
+            <button
+              class="bg-blue-600 hover:bg-blue-700 px-2 py-1 rounded text-sm"
+              id="submit-username"
+            >
+              <i class="fas fa-check"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- Notification Toast -->
     <div
       class="fixed bottom-4 right-4 bg-gray-800 text-white px-3 py-1 rounded-lg shadow-lg text-sm hidden flex items-center"
       id="notification-toast"
     >
       <i class="fas fa-check-circle text-green-400 mr-2"></i>
-      <span id="notification-message">Meeting link copied to clipboard</span>
+      <span id="notification-message"></span>
     </div>
 
     <script src="/socket.io/socket.io.js"></script>
     <script>
-      const socket = io();
-      const urlParams = new URLSearchParams(window.location.search);
-      const room = urlParams.get("room");
-      const userName = urlParams.get("name") || "Anonymous";
+      // Initialize Socket.IO with reconnection handling
+      const socket = io({
+        reconnection: true,
+        reconnectionAttempts: 5,
+        reconnectionDelay: 1000,
+        reconnectionDelayMax: 5000,
+        randomizationFactor: 0.5,
+      });
 
-      if (!room) {
-        alert("Missing room in URL");
-        window.location.href = "/";
-        throw new Error("Missing room");
-      }
+      // URL Parameters
+      const urlParams = new URLSearchParams(window.location.search);
+      const room = urlParams.get("room")?.trim();
+      let userName = sessionStorage.getItem("userName")?.trim();
 
       // DOM Elements
-      const meetingScreen = document.getElementById("meeting-screen");
-      const homeButton = document.getElementById("home-button");
-      const meetingIdDisplay = document.getElementById("meeting-id");
-      const copyMeetingId = document.getElementById("copy-meeting-id");
-      const meetingTitle = document.getElementById("meeting-title");
-      const videoGrid = document.getElementById("video-grid");
-      const micToggle = document.getElementById("mic-toggle");
-      const cameraToggle = document.getElementById("camera-toggle");
-      const screenShareBtn = document.getElementById("screen-share-btn");
-      const raiseHandBtn = document.getElementById("raise-hand-btn");
-      const recordBtn = document.getElementById("record-btn");
-      const leaveCallBtn = document.getElementById("leave-call-btn");
-      const endCallBtn = document.getElementById("end-call-btn");
-      const moreOptionsBtn = document.getElementById("more-options-btn");
-      const reactionsBtn = document.getElementById("reactions-btn");
-      const virtualBackgroundBtn = document.getElementById(
-        "virtual-background-btn"
-      );
-      const sidebar = document.getElementById("sidebar");
-      const closeSidebarBtn = document.getElementById("close-sidebar");
-      const participantsToggle = document.getElementById("participants-toggle");
-      const chatToggle = document.getElementById("chat-toggle");
-      const inviteButton = document.getElementById("invite-button");
-      const sidebarTabs = document.getElementById("sidebar-tabs");
-      const participantsTab = document.getElementById("participants-tab");
-      const chatTab = document.getElementById("chat-tab");
-      const participantsList = document.getElementById("participants-list");
-      const participantCount = document.getElementById("participant-count");
-      const participantCountSidebar = document.getElementById(
-        "participant-count-sidebar"
-      );
-      const inviteParticipant = document.getElementById("invite-participant");
-      const sendInvite = document.getElementById("send-invite");
-      const copyMeetingLinkSidebar = document.getElementById(
-        "copy-meeting-link-sidebar"
-      );
-      const chatInput = document.getElementById("chat-input");
-      const sendMessageBtn = document.getElementById("send-message-btn");
-      const sendReactionBtn = document.getElementById("send-reaction-btn");
-      const chatMessages = document.getElementById("chat-messages");
-      const screenShareOverlay = document.getElementById(
-        "screen-share-overlay"
-      );
-      const stopScreenShareBtn = document.getElementById("stop-screen-share");
-      const minimizeScreenShareBtn = document.getElementById(
-        "minimize-screen-share"
-      );
-      const reactionsPopup = document.getElementById("reactions-popup");
-      const moreOptionsPopup = document.getElementById("more-options-popup");
-      const virtualBackgroundPopup = document.getElementById(
-        "virtual-background-popup"
-      );
-      const inviteFriendsModal = document.getElementById(
-        "invite-friends-modal"
-      );
-      const closeInviteModal = document.getElementById("close-invite-modal");
-      const meetingLink = document.getElementById("meeting-link");
-      const copyMeetingLink = document.getElementById("copy-meeting-link");
-      const sendInvitesBtn = document.getElementById("send-invites");
-      const inviteEmails = document.getElementById("invite-emails");
-      const shareWhatsapp = document.getElementById("share-whatsapp");
-      const shareEmail = document.getElementById("share-email");
-      const shareSms = document.getElementById("share-sms");
-      const shareCopy = document.getElementById("share-copy");
-      const notificationToast = document.getElementById("notification-toast");
-      const notificationMessage = document.getElementById(
-        "notification-message"
-      );
-
-      // State variables
-      let localStream = null;
-      let screenStream = null;
-      let isMicOn = true;
-      let isCameraOn = true;
-      let isScreenSharing = false;
-      let isHandRaised = false;
-      let isRecording = false;
-      let isSidebarOpen = false;
-      let activeTab = "participants";
-      let isHost = false;
-      const peers = {};
-      const peerStreams = {};
-      const participantNames = new Map();
-      participantNames.set("local", userName);
-
-      const config = {
-        iceServers: [{ urls: "stun:stun.l.google.com:19302" }],
+      const elements = {
+        meetingScreen: document.getElementById("meeting-screen"),
+        homeButton: document.getElementById("home-button"),
+        meetingIdDisplay: document.getElementById("meeting-id"),
+        copyMeetingId: document.getElementById("copy-meeting-id"),
+        meetingTitle: document.getElementById("meeting-title"),
+        videoGrid: document.getElementById("video-grid"),
+        micToggle: document.getElementById("mic-toggle"),
+        cameraToggle: document.getElementById("camera-toggle"),
+        screenShareBtn: document.getElementById("screen-share-btn"),
+        raiseHandBtn: document.getElementById("raise-hand-btn"),
+        recordBtn: document.getElementById("record-btn"),
+        leaveCallBtn: document.getElementById("leave-call-btn"),
+        endCallBtn: document.getElementById("end-call-btn"),
+        moreOptionsBtn: document.getElementById("more-options-btn"),
+        reactionsBtn: document.getElementById("reactions-btn"),
+        virtualBackgroundBtn: document.getElementById("virtual-background-btn"),
+        sidebar: document.getElementById("sidebar"),
+        closeSidebarBtn: document.getElementById("close-sidebar"),
+        participantsToggle: document.getElementById("participants-toggle"),
+        chatToggle: document.getElementById("chat-toggle"),
+        inviteButton: document.getElementById("invite-button"),
+        sidebarTabs: document.getElementById("sidebar-tabs"),
+        participantsTab: document.getElementById("participants-tab"),
+        chatTab: document.getElementById("chat-tab"),
+        participantsList: document.getElementById("participants-list"),
+        participantCount: document.getElementById("participant-count"),
+        participantCountSidebar: document.getElementById(
+          "participant-count-sidebar"
+        ),
+        inviteParticipant: document.getElementById("invite-participant"),
+        sendInvite: document.getElementById("send-invite"),
+        copyMeetingLinkSidebar: document.getElementById(
+          "copy-meeting-link-sidebar"
+        ),
+        chatInput: document.getElementById("chat-input"),
+        sendMessageBtn: document.getElementById("send-message-btn"),
+        sendReactionBtn: document.getElementById("send-reaction-btn"),
+        chatMessages: document.getElementById("chat-messages"),
+        screenShareOverlay: document.getElementById("screen-share-overlay"),
+        stopScreenShareBtn: document.getElementById("stop-screen-share"),
+        minimizeScreenShareBtn: document.getElementById(
+          "minimize-screen-share"
+        ),
+        reactionsPopup: document.getElementById("reactions-popup"),
+        moreOptionsPopup: document.getElementById("more-options-popup"),
+        virtualBackgroundPopup: document.getElementById(
+          "virtual-background-popup"
+        ),
+        inviteFriendsModal: document.getElementById("invite-friends-modal"),
+        closeInviteModal: document.getElementById("close-invite-modal"),
+        meetingLink: document.getElementById("meeting-link"),
+        copyMeetingLink: document.getElementById("copy-meeting-link"),
+        sendInvitesBtn: document.getElementById("send-invites"),
+        inviteEmails: document.getElementById("invite-emails"),
+        shareWhatsapp: document.getElementById("share-whatsapp"),
+        shareEmail: document.getElementById("share-email"),
+        shareSms: document.getElementById("share-sms"),
+        shareCopy: document.getElementById("share-copy"),
+        notificationToast: document.getElementById("notification-toast"),
+        notificationMessage: document.getElementById("notification-message"),
+        usernameModal: document.getElementById("username-modal"),
+        closeUsernameModal: document.getElementById("close-username-modal"),
+        usernameInput: document.getElementById("username-input"),
+        submitUsername: document.getElementById("submit-username"),
       };
 
-      // Initialize
+      // State Management
+      const state = {
+        localStream: null,
+        screenStream: null,
+        isMicOn: true,
+        isCameraOn: true,
+        isScreenSharing: false,
+        isHandRaised: false,
+        isRecording: false,
+        isSidebarOpen: false,
+        activeTab: "participants",
+        isHost: false,
+        peers: new Map(),
+        peerStreams: new Map(),
+        participantNames: new Map(),
+        cleanupInterval: null,
+      };
+
+      // WebRTC Configuration
+      const config = {
+        iceServers: [
+          { urls: "stun:stun.l.google.com:19302" },
+          { urls: "stun:stun1.l.google.com:19302" },
+          { urls: "stun:stun2.l.google.com:19302" },
+        ],
+        iceTransportPolicy: "all",
+        iceCandidatePoolSize: 0,
+      };
+
+      // Initialize Application
       function init() {
-        meetingIdDisplay.textContent = room;
-        meetingTitle.textContent = "Creative Review";
+        if (!room) {
+          showNotification("Invalid meeting room");
+          setTimeout(() => (window.location.href = "/"), 2000);
+          return;
+        }
+
+        if (!userName) {
+          showUsernameModal();
+        } else {
+          state.participantNames.set("local", sanitizeInput(userName));
+          setupMeeting();
+        }
+
+        elements.submitUsername.addEventListener("click", handleUsernameSubmit);
+        elements.usernameInput.addEventListener("keypress", (e) => {
+          if (e.key === "Enter") handleUsernameSubmit();
+        });
+        elements.closeUsernameModal.addEventListener("click", () => {
+          window.location.href = "/";
+        });
+
+        // Handle window unload
+        window.addEventListener("beforeunload", cleanup);
+      }
+
+      // Input Sanitization
+      function sanitizeInput(input) {
+        const div = document.createElement("div");
+        div.textContent = input;
+        return div.innerHTML;
+      }
+
+      // Show Username Modal
+      function showUsernameModal() {
+        elements.usernameModal.classList.remove("hidden");
+        elements.meetingScreen.classList.add("blur-background");
+        elements.usernameInput.focus();
+      }
+
+      // Handle Username Submission
+      function handleUsernameSubmit() {
+        const name = elements.usernameInput.value.trim();
+        if (name && name.length <= 50) {
+          userName = sanitizeInput(name);
+          sessionStorage.setItem("userName", userName);
+          state.participantNames.set("local", userName);
+          elements.usernameModal.classList.add("hidden");
+          elements.meetingScreen.classList.remove("blur-background");
+          updateMeetingLink();
+          setupMeeting();
+        } else {
+          showNotification("Please enter a valid name (1-50 characters)");
+        }
+      }
+
+      // Setup Meeting
+      function setupMeeting() {
+        elements.meetingIdDisplay.textContent = room;
+        elements.meetingTitle.textContent = "Creative Review";
         updateMeetingLink();
 
-        homeButton.addEventListener("click", returnToHomeScreen);
-        copyMeetingId.addEventListener("click", copyMeetingLinkToClipboard);
-        micToggle.addEventListener("click", toggleMic);
-        cameraToggle.addEventListener("click", toggleCamera);
-        screenShareBtn.addEventListener("click", toggleScreenShare);
-        raiseHandBtn.addEventListener("click", toggleRaiseHand);
-        recordBtn.addEventListener("click", toggleRecording);
-        leaveCallBtn.addEventListener("click", leaveCall);
-        endCallBtn.addEventListener("click", endCall);
-        moreOptionsBtn.addEventListener("click", toggleMoreOptions);
-        reactionsBtn.addEventListener("click", toggleReactionsPopup);
-        virtualBackgroundBtn.addEventListener(
-          "click",
-          toggleVirtualBackgroundPopup
-        );
-        closeSidebarBtn.addEventListener("click", toggleSidebar);
-        participantsToggle.addEventListener("click", () => {
-          toggleSidebar();
-          showTab("participants");
-        });
-        chatToggle.addEventListener("click", () => {
-          toggleSidebar();
-          showTab("chat");
-        });
-        inviteButton.addEventListener("click", showInviteFriendsModal);
-        copyMeetingLinkSidebar.addEventListener(
+        // Event Listeners
+        elements.homeButton.addEventListener("click", returnToHomeScreen);
+        elements.copyMeetingId.addEventListener(
           "click",
           copyMeetingLinkToClipboard
         );
-        sendInvite.addEventListener("click", sendEmailInvites);
-        closeInviteModal.addEventListener("click", hideInviteFriendsModal);
-        copyMeetingLink.addEventListener("click", copyMeetingLinkToClipboard);
-        sendInvitesBtn.addEventListener("click", sendEmailInvites);
-        shareWhatsapp.addEventListener("click", shareViaWhatsapp);
-        shareEmail.addEventListener("click", shareViaEmail);
-        shareSms.addEventListener("click", shareViaSms);
-        shareCopy.addEventListener("click", copyMeetingLinkToClipboard);
+        elements.micToggle.addEventListener("click", toggleMic);
+        elements.cameraToggle.addEventListener("click", toggleCamera);
+        elements.screenShareBtn.addEventListener("click", toggleScreenShare);
+        elements.raiseHandBtn.addEventListener("click", toggleRaiseHand);
+        elements.recordBtn.addEventListener("click", toggleRecording);
+        elements.leaveCallBtn.addEventListener("click", leaveCall);
+        elements.endCallBtn.addEventListener("click", endCall);
+        elements.moreOptionsBtn.addEventListener("click", toggleMoreOptions);
+        elements.reactionsBtn.addEventListener("click", toggleReactionsPopup);
+        elements.virtualBackgroundBtn.addEventListener(
+          "click",
+          toggleVirtualBackgroundPopup
+        );
+        elements.closeSidebarBtn.addEventListener("click", toggleSidebar);
+        elements.participantsToggle.addEventListener("click", () => {
+          toggleSidebar();
+          showTab("participants");
+        });
+        elements.chatToggle.addEventListener("click", () => {
+          toggleSidebar();
+          showTab("chat");
+        });
+        elements.inviteButton.addEventListener("click", showInviteFriendsModal);
+        elements.copyMeetingLinkSidebar.addEventListener(
+          "click",
+          copyMeetingLinkToClipboard
+        );
+        elements.sendInvite.addEventListener("click", sendEmailInvites);
+        elements.closeInviteModal.addEventListener(
+          "click",
+          hideInviteFriendsModal
+        );
+        elements.copyMeetingLink.addEventListener(
+          "click",
+          copyMeetingLinkToClipboard
+        );
+        elements.sendInvitesBtn.addEventListener("click", sendEmailInvites);
+        elements.shareWhatsapp.addEventListener("click", shareViaWhatsapp);
+        elements.shareEmail.addEventListener("click", shareViaEmail);
+        elements.shareSms.addEventListener("click", shareViaSms);
+        elements.shareCopy.addEventListener(
+          "click",
+          copyMeetingLinkToClipboard
+        );
 
-        sidebarTabs.querySelectorAll("button").forEach((button) => {
+        elements.sidebarTabs.querySelectorAll("button").forEach((button) => {
           button.addEventListener("click", () => {
-            const tab = button.getAttribute("data-tab");
-            showTab(tab);
+            showTab(button.getAttribute("data-tab"));
           });
         });
 
-        stopScreenShareBtn.addEventListener("click", stopScreenShare);
-        minimizeScreenShareBtn.addEventListener("click", () => {
-          screenShareOverlay.classList.add("hidden");
+        elements.stopScreenShareBtn.addEventListener("click", stopScreenShare);
+        elements.minimizeScreenShareBtn.addEventListener("click", () => {
+          elements.screenShareOverlay.classList.add("hidden");
         });
 
         document.querySelectorAll(".reaction-emoji").forEach((button) => {
           button.addEventListener("click", () => {
             const emoji = button.getAttribute("data-emoji");
             sendReaction(emoji);
-            reactionsPopup.classList.add("hidden");
+            elements.reactionsPopup.classList.add("hidden");
           });
         });
 
+        // Close popups on outside click
         document.addEventListener("click", (e) => {
           if (
-            !moreOptionsBtn.contains(e.target) &&
-            !moreOptionsPopup.contains(e.target)
+            !elements.moreOptionsBtn.contains(e.target) &&
+            !elements.moreOptionsPopup.contains(e.target)
           ) {
-            moreOptionsPopup.classList.add("hidden");
+            elements.moreOptionsPopup.classList.add("hidden");
           }
           if (
-            !reactionsBtn.contains(e.target) &&
-            !reactionsPopup.contains(e.target)
+            !elements.reactionsBtn.contains(e.target) &&
+            !elements.reactionsPopup.contains(e.target)
           ) {
-            reactionsPopup.classList.add("hidden");
+            elements.reactionsPopup.classList.add("hidden");
           }
           if (
-            !virtualBackgroundBtn.contains(e.target) &&
-            !virtualBackgroundPopup.contains(e.target)
+            !elements.virtualBackgroundBtn.contains(e.target) &&
+            !elements.virtualBackgroundPopup.contains(e.target)
           ) {
-            virtualBackgroundPopup.classList.add("hidden");
+            elements.virtualBackgroundPopup.classList.add("hidden");
           }
         });
 
-        chatInput.addEventListener("keypress", (e) => {
-          if (e.key === "Enter") {
-            sendChatMessage();
-          }
+        elements.chatInput.addEventListener("keypress", (e) => {
+          if (e.key === "Enter") sendChatMessage();
         });
-        sendMessageBtn.addEventListener("click", sendChatMessage);
-        sendReactionBtn.addEventListener("click", () => {
-          sendReaction("❤️");
-        });
+        elements.sendMessageBtn.addEventListener("click", sendChatMessage);
+        elements.sendReactionBtn.addEventListener("click", () =>
+          sendReaction("❤️")
+        );
 
+        // Start cleanup interval
+        state.cleanupInterval = setInterval(cleanupStaleVideos, 2000);
         startMeeting();
-
-        setInterval(cleanupStaleVideos, 2000);
       }
 
-      // Update meeting link
+      // Update Meeting Link
       function updateMeetingLink() {
-        const link = `${
-          window.location.origin
-        }/meeting.html?room=${encodeURIComponent(
-          room
-        )}&name=${encodeURIComponent(userName)}`;
-        meetingLink.value = link;
+        const link = `${window.location.origin}/meeting.html?room=${encodeURIComponent(room)}`;
+        elements.meetingLink.value = link;
       }
 
-      // Start meeting
+      // Start Meeting
       async function startMeeting() {
         try {
           await startLocalMedia();
           socket.emit("join-room", { room, name: userName });
-          createVideoElement("local", userName, localStream, true);
+          createVideoElement("local", userName, state.localStream, true);
           addParticipant("local", userName, true, false);
-          isHost = true;
+          state.isHost = true;
+
+          // Setup socket event handlers
+          setupSocketEvents();
         } catch (error) {
-          showNotification("Failed to start meeting: " + error.message);
+          showNotification(`Failed to start meeting: ${error.message}`);
+          setTimeout(() => (window.location.href = "/"), 3000);
         }
       }
 
-      // Start local media
+      // Start Local Media
       async function startLocalMedia() {
         try {
-          localStream = await navigator.mediaDevices.getUserMedia({
-            video: true,
-            audio: true,
+          state.localStream = await navigator.mediaDevices.getUserMedia({
+            video: {
+              width: { ideal: 1280 },
+              height: { ideal: 720 },
+              frameRate: { ideal: 30 },
+            },
+            audio: {
+              echoCancellation: true,
+              noiseSuppression: true,
+              autoGainControl: true,
+            },
           });
         } catch (err) {
-          showNotification(
-            "Could not access camera or microphone: " + err.message
-          );
+          showNotification(`Could not access media devices: ${err.message}`);
           throw err;
         }
       }
 
-      // Create video element
+      // Create Video Element
       function createVideoElement(
         participantId,
         name,
@@ -1286,7 +1433,7 @@
         );
         if (existingContainer) {
           const video = existingContainer.querySelector("video");
-          if (video) {
+          if (video && stream) {
             video.srcObject = stream;
           }
           return;
@@ -1298,32 +1445,31 @@
           ? "video-container"
           : "participant-tile";
 
+        const videoWrapper = document.createElement("div");
+        videoWrapper.className = "video-wrapper";
+
         const video = document.createElement("video");
         video.id = `video-${participantId}`;
         video.autoplay = true;
         video.playsInline = true;
         video.muted = isLocal;
-        video.srcObject = stream;
+        if (stream) video.srcObject = stream;
 
         const nameLabel = document.createElement("div");
         nameLabel.className = "participant-name";
-        nameLabel.textContent = name;
+        nameLabel.textContent = sanitizeInput(name);
 
         const controls = document.createElement("div");
         controls.className = "participant-controls";
 
         if (!isLocal) {
           const muteBtn = document.createElement("button");
-          muteBtn.className =
-            "text-xs bg-gray-600 hover:bg-gray-500 px-2 py-1 rounded";
           muteBtn.innerHTML = '<i class="fas fa-microphone"></i>';
           muteBtn.addEventListener("click", () =>
             toggleRemoteMute(participantId)
           );
 
           const videoBtn = document.createElement("button");
-          videoBtn.className =
-            "text-xs bg-gray-600 hover:bg-gray-500 px-2 py-1 rounded";
           videoBtn.innerHTML = '<i class="fas fa-video"></i>';
           videoBtn.addEventListener("click", () =>
             toggleRemoteVideo(participantId)
@@ -1333,52 +1479,46 @@
           controls.appendChild(videoBtn);
         }
 
-        videoContainer.appendChild(video);
+        videoWrapper.appendChild(video);
+        videoContainer.appendChild(videoWrapper);
         videoContainer.appendChild(nameLabel);
         videoContainer.appendChild(controls);
 
         if (isLocal) {
-          videoGrid.insertBefore(videoContainer, videoGrid.firstChild);
+          elements.videoGrid.insertBefore(
+            videoContainer,
+            elements.videoGrid.firstChild
+          );
         } else {
-          videoGrid.appendChild(videoContainer);
+          elements.videoGrid.appendChild(videoContainer);
         }
 
-        // Update video grid layout based on number of participants
         updateVideoGridLayout();
       }
 
-      // Update video grid layout based on number of participants
+      // Update Video Grid Layout
       function updateVideoGridLayout() {
-        const videoContainers = videoGrid.querySelectorAll(
+        const videoContainers = elements.videoGrid.querySelectorAll(
           ".video-container, .participant-tile"
         );
         const count = videoContainers.length;
 
-        if (count === 1) {
-          videoGrid.style.gridTemplateColumns = "1fr";
-        } else if (count === 2) {
-          videoGrid.style.gridTemplateColumns = "1fr";
-          if (window.innerWidth >= 640) {
-            videoGrid.style.gridTemplateColumns = "1fr 1fr";
-          }
-        } else if (count === 3 || count === 4) {
-          videoGrid.style.gridTemplateColumns = "1fr";
-          if (window.innerWidth >= 640) {
-            videoGrid.style.gridTemplateColumns = "1fr 1fr";
-          }
-        } else if (count >= 5) {
-          videoGrid.style.gridTemplateColumns = "1fr";
-          if (window.innerWidth >= 640) {
-            videoGrid.style.gridTemplateColumns =
-              "repeat(auto-fit, minmax(250px, 1fr))";
-          }
+        let columns = "1fr";
+        if (count === 2 && window.innerWidth >= 640) {
+          columns = "1fr 1fr";
+        } else if ((count === 3 || count === 4) && window.innerWidth >= 640) {
+          columns = "1fr 1fr";
+        } else if (count >= 5 && window.innerWidth >= 640) {
+          columns = "repeat(auto-fit, minmax(250px, 1fr))";
         }
+
+        elements.videoGrid.style.gridTemplateColumns = columns;
       }
 
-      // Add participant
+      // Add Participant
       function addParticipant(id, name, isHost = false, isHandRaised = false) {
-        participantNames.set(id, name || "Anonymous");
-        const existingParticipant = participantsList.querySelector(
+        state.participantNames.set(id, sanitizeInput(name || "Anonymous"));
+        const existingParticipant = elements.participantsList.querySelector(
           `[data-id="${id}"]`
         );
         if (existingParticipant) {
@@ -1451,172 +1591,189 @@
         participantElement.appendChild(infoDiv);
         participantElement.appendChild(controlsDiv);
 
-        participantsList.appendChild(participantElement);
+        elements.participantsList.appendChild(participantElement);
         updateParticipantCount();
       }
 
-      // Update participant count
+      // Update Participant Count
       function updateParticipantCount() {
-        const count = Math.max(1, participantsList.children.length);
-        participantCount.textContent = count;
-        participantCountSidebar.textContent = count;
+        const count = Math.max(1, elements.participantsList.children.length);
+        elements.participantCount.textContent = count;
+        elements.participantCountSidebar.textContent = count;
       }
 
-      // Toggle microphone
+      // Toggle Microphone
       function toggleMic() {
-        isMicOn = !isMicOn;
-        if (localStream) {
-          localStream
-            .getAudioTracks()
-            .forEach((track) => (track.enabled = isMicOn));
+        state.isMicOn = !state.isMicOn;
+        if (state.localStream) {
+          state.localStream.getAudioTracks().forEach((track) => {
+            track.enabled = state.isMicOn;
+          });
         }
-        micToggle.innerHTML = `<i class="fas ${
-          isMicOn ? "fa-microphone text-green-400" : "fa-microphone-slash"
+        elements.micToggle.innerHTML = `<i class="fas ${
+          state.isMicOn ? "fa-microphone text-green-400" : "fa-microphone-slash"
         }"></i>`;
-        showNotification(isMicOn ? "Microphone on" : "Microphone off");
+        showNotification(state.isMicOn ? "Microphone on" : "Microphone off");
+        socket.emit("toggle-mic", { room, micOn: state.isMicOn });
       }
 
-      // Toggle camera
+      // Toggle Camera
       function toggleCamera() {
-        isCameraOn = !isCameraOn;
-        if (localStream) {
-          localStream
-            .getVideoTracks()
-            .forEach((track) => (track.enabled = isCameraOn));
+        state.isCameraOn = !state.isCameraOn;
+        if (state.localStream) {
+          state.localStream.getVideoTracks().forEach((track) => {
+            track.enabled = state.isCameraOn;
+          });
         }
-        cameraToggle.innerHTML = `<i class="fas ${
-          isCameraOn ? "fa-video text-green-400" : "fa-video-slash"
+        elements.cameraToggle.innerHTML = `<i class="fas ${
+          state.isCameraOn ? "fa-video text-green-400" : "fa-video-slash"
         }"></i>`;
-        showNotification(isCameraOn ? "Camera on" : "Camera off");
+        showNotification(state.isCameraOn ? "Camera on" : "Camera off");
+        socket.emit("toggle-camera", { room, cameraOn: state.isCameraOn });
       }
 
-      // Toggle screen sharing
+      // Toggle Screen Sharing
       async function toggleScreenShare() {
-        if (isScreenSharing) {
+        if (state.isScreenSharing) {
           stopScreenShare();
         } else {
           try {
-            screenStream = await navigator.mediaDevices.getDisplayMedia({
-              video: { cursor: "always" },
-              audio: true,
+            state.screenStream = await navigator.mediaDevices.getDisplayMedia({
+              video: { cursor: "always", displaySurface: "monitor" },
+              audio: { suppressLocalAudioPlayback: true },
             });
-            const screenTrack = screenStream.getVideoTracks()[0];
-            for (let id in peers) {
-              const sender = peers[id]
+
+            const screenTrack = state.screenStream.getVideoTracks()[0];
+            state.peers.forEach((pc, id) => {
+              const sender = pc
                 .getSenders()
-                .find((s) => s.track.kind === "video");
+                .find((s) => s.track?.kind === "video");
               if (sender) sender.replaceTrack(screenTrack);
-            }
+            });
+
             screenTrack.onended = stopScreenShare;
-            document.getElementById("screen-share-video").srcObject =
-              screenStream;
-            screenShareOverlay.classList.remove("hidden");
-            isScreenSharing = true;
-            screenShareBtn.innerHTML =
+            elements.screenShareOverlay.querySelector("video").srcObject =
+              state.screenStream;
+            elements.screenShareOverlay.classList.remove("hidden");
+            state.isScreenSharing = true;
+            elements.screenShareBtn.innerHTML =
               '<i class="fas fa-desktop text-green-400"></i>';
             showNotification("Screen sharing started");
+            socket.emit("screen-share", { room, sharing: true });
           } catch (err) {
-            showNotification("Could not start screen sharing: " + err.message);
+            showNotification(`Could not start screen sharing: ${err.message}`);
           }
         }
       }
 
-      // Stop screen sharing
+      // Stop Screen Sharing
       function stopScreenShare() {
-        if (!isScreenSharing) return;
-        const videoTrack = localStream.getVideoTracks()[0];
-        for (let id in peers) {
-          const sender = peers[id]
-            .getSenders()
-            .find((s) => s.track.kind === "video");
-          if (sender) sender.replaceTrack(videoTrack);
+        if (!state.isScreenSharing) return;
+
+        const videoTrack = state.localStream?.getVideoTracks()[0];
+        state.peers.forEach((pc, id) => {
+          const sender = pc.getSenders().find((s) => s.track?.kind === "video");
+          if (sender && videoTrack) sender.replaceTrack(videoTrack);
+        });
+
+        if (state.screenStream) {
+          state.screenStream.getTracks().forEach((track) => track.stop());
+          state.screenStream = null;
         }
-        if (screenStream) {
-          screenStream.getTracks().forEach((track) => track.stop());
-          screenStream = null;
-        }
-        screenShareOverlay.classList.add("hidden");
-        isScreenSharing = false;
-        screenShareBtn.innerHTML = '<i class="fas fa-desktop"></i>';
+
+        elements.screenShareOverlay.classList.add("hidden");
+        state.isScreenSharing = false;
+        elements.screenShareBtn.innerHTML = '<i class="fas fa-desktop"></i>';
         showNotification("Screen sharing stopped");
+        socket.emit("screen-share", { room, sharing: false });
       }
 
-      // Toggle raise hand
+      // Toggle Raise Hand
       function toggleRaiseHand() {
-        isHandRaised = !isHandRaised;
-        socket.emit("toggle-hand", { raised: isHandRaised });
-        raiseHandBtn.innerHTML = `<i class="fas fa-hand-paper ${
-          isHandRaised ? "text-yellow-400" : ""
+        state.isHandRaised = !state.isHandRaised;
+        socket.emit("toggle-hand", { room, raised: state.isHandRaised });
+        elements.raiseHandBtn.innerHTML = `<i class="fas fa-hand-paper ${
+          state.isHandRaised ? "text-yellow-400" : ""
         }"></i>`;
         showNotification(
-          isHandRaised ? "Your hand is raised" : "Your hand is lowered"
+          state.isHandRaised ? "Your hand is raised" : "Your hand is lowered"
         );
         updateParticipantList();
       }
 
-      // Toggle recording (placeholder)
+      // Toggle Recording
       function toggleRecording() {
-        isRecording = !isRecording;
-        recordBtn.innerHTML = `<i class="fas fa-circle ${
-          isRecording ? "text-red-500" : "text-gray-400"
+        state.isRecording = !state.isRecording;
+        elements.recordBtn.innerHTML = `<i class="fas fa-circle ${
+          state.isRecording ? "text-red-500" : "text-gray-400"
         }"></i>`;
         showNotification(
-          isRecording ? "Recording has started" : "Recording has stopped"
+          state.isRecording ? "Recording started" : "Recording stopped"
+        );
+        socket.emit("toggle-recording", { room, recording: state.isRecording });
+      }
+
+      // Toggle Sidebar
+      function toggleSidebar() {
+        state.isSidebarOpen = !state.isSidebarOpen;
+        elements.sidebar.classList.toggle(
+          "sidebar-hidden",
+          !state.isSidebarOpen
         );
       }
 
-      // Toggle sidebar
-      function toggleSidebar() {
-        isSidebarOpen = !isSidebarOpen;
-        sidebar.classList.toggle("sidebar-hidden", !isSidebarOpen);
-      }
-
-      // Show specific sidebar tab
+      // Show Sidebar Tab
       function showTab(tab) {
-        activeTab = tab;
-        sidebarTabs.querySelectorAll("button").forEach((btn) => {
+        state.activeTab = tab;
+        elements.sidebarTabs.querySelectorAll("button").forEach((btn) => {
           btn.classList.toggle(
             "bg-gray-700",
             btn.getAttribute("data-tab") === tab
           );
         });
-        participantsTab.classList.toggle("hidden", tab !== "participants");
-        chatTab.classList.toggle("hidden", tab !== "chat");
+        elements.participantsTab.classList.toggle(
+          "hidden",
+          tab !== "participants"
+        );
+        elements.chatTab.classList.toggle("hidden", tab !== "chat");
       }
 
-      // Toggle more options popup
+      // Toggle More Options
       function toggleMoreOptions() {
-        moreOptionsPopup.classList.toggle("hidden");
+        elements.moreOptionsPopup.classList.toggle("hidden");
       }
 
-      // Toggle reactions popup
+      // Toggle Reactions Popup
       function toggleReactionsPopup() {
-        reactionsPopup.classList.toggle("hidden");
+        elements.reactionsPopup.classList.toggle("hidden");
       }
 
-      // Toggle virtual background popup
+      // Toggle Virtual Background Popup
       function toggleVirtualBackgroundPopup() {
-        virtualBackgroundPopup.classList.toggle("hidden");
+        elements.virtualBackgroundPopup.classList.toggle("hidden");
       }
 
-      // Send chat message
+      // Send Chat Message
       function sendChatMessage() {
-        const message = chatInput.value.trim();
-        if (message) {
-          socket.emit("chat-message", { room, message, name: userName });
-          addChatMessage(
-            userName,
-            message,
-            new Date().toLocaleTimeString([], {
-              hour: "2-digit",
-              minute: "2-digit",
-            })
-          );
-          chatInput.value = "";
+        const message = elements.chatInput.value.trim();
+        if (message && message.length <= 500) {
+          const time = new Date().toLocaleTimeString([], {
+            hour: "2-digit",
+            minute: "2-digit",
+          });
+          socket.emit("chat-message", {
+            room,
+            message: sanitizeInput(message),
+            name: userName,
+          });
+          addChatMessage(userName, message, time);
+          elements.chatInput.value = "";
+        } else {
+          showNotification("Message must be 1-500 characters");
         }
       }
 
-      // Add chat message to UI
+      // Add Chat Message
       function addChatMessage(name, message, time) {
         const messageDiv = document.createElement("div");
         messageDiv.className = "chat-message flex items-start mb-2";
@@ -1638,7 +1795,7 @@
 
         const nameSpan = document.createElement("span");
         nameSpan.className = "font-medium text-sm";
-        nameSpan.textContent = name;
+        nameSpan.textContent = sanitizeInput(name);
 
         const timeSpan = document.createElement("span");
         timeSpan.className = "text-xs text-gray-400";
@@ -1646,7 +1803,7 @@
 
         const messageP = document.createElement("p");
         messageP.className = "text-sm";
-        messageP.textContent = message;
+        messageP.textContent = sanitizeInput(message);
 
         headerDiv.appendChild(nameSpan);
         headerDiv.appendChild(timeSpan);
@@ -1656,207 +1813,264 @@
         messageDiv.appendChild(avatar);
         messageDiv.appendChild(contentDiv);
 
-        chatMessages.appendChild(messageDiv);
-        chatMessages.scrollTop = chatMessages.scrollHeight;
+        elements.chatMessages.appendChild(messageDiv);
+        elements.chatMessages.scrollTop = elements.chatMessages.scrollHeight;
       }
 
-      // Send reaction
+      // Send Reaction
       function sendReaction(emoji) {
         socket.emit("reaction", { room, emoji, name: userName });
         showReaction(emoji, userName);
       }
 
-      // Show reaction animation
+      // Show Reaction
       function showReaction(emoji, name) {
         const reactionDiv = document.createElement("div");
         reactionDiv.className = "reaction-animation";
         reactionDiv.textContent = emoji;
         reactionDiv.style.left = `${Math.random() * 80 + 10}%`;
         reactionDiv.style.bottom = "100px";
-        videoGrid.appendChild(reactionDiv);
+        elements.videoGrid.appendChild(reactionDiv);
         setTimeout(() => reactionDiv.remove(), 2000);
-        showNotification(`${name} sent ${emoji}`);
+        showNotification(`${sanitizeInput(name)} sent ${emoji}`);
       }
 
-      // Copy meeting link
-      function copyMeetingLinkToClipboard() {
-        const link = `${
-          window.location.origin
-        }/meeting.html?room=${encodeURIComponent(
-          room
-        )}&name=${encodeURIComponent(userName)}`;
-        navigator.clipboard
-          .writeText(link)
-          .then(() => showNotification("Meeting link copied to clipboard"))
-          .catch(() => showNotification("Failed to copy meeting link"));
+      // Copy Meeting Link
+      async function copyMeetingLinkToClipboard() {
+        const link = `${window.location.origin}/meeting.html?room=${encodeURIComponent(room)}`;
+        try {
+          await navigator.clipboard.writeText(link);
+          showNotification("Meeting link copied to clipboard");
+        } catch {
+          showNotification("Failed to copy meeting link");
+        }
       }
 
-      // Send email invites (placeholder)
+      // Send Email Invites
       function sendEmailInvites() {
-        const emails =
-          inviteEmails.value.trim() || inviteParticipant.value.trim();
-        if (emails) {
-          showNotification(`Invites sent to: ${emails}`);
-          inviteEmails.value = "";
-          inviteParticipant.value = "";
+        const emails = (
+          elements.inviteEmails.value.trim() ||
+          elements.inviteParticipant.value.trim()
+        )
+          .split(",")
+          .map((email) => email.trim())
+          .filter((email) => email);
+        if (emails.length) {
+          showNotification(`Invites sent to: ${emails.join(", ")}`);
+          socket.emit("send-invites", { room, emails });
+          elements.inviteEmails.value = "";
+          elements.inviteParticipant.value = "";
           hideInviteFriendsModal();
         } else {
           showNotification("Please enter at least one email address");
         }
       }
 
-      // Share via WhatsApp (placeholder)
+      // Share via WhatsApp
       function shareViaWhatsapp() {
+        const link = encodeURIComponent(
+          `${window.location.origin}/meeting.html?room=${encodeURIComponent(room)}`
+        );
+        window.open(`https://wa.me/?text=Join my meeting: ${link}`, "_blank");
         showNotification("Opening WhatsApp to share meeting link");
       }
 
-      // Share via Email (placeholder)
+      // Share via Email
       function shareViaEmail() {
+        const link = `${window.location.origin}/meeting.html?room=${encodeURIComponent(room)}`;
+        window.open(
+          `mailto:?subject=Join My Meeting&body=Join my meeting: ${link}`
+        );
         showNotification("Opening email client to share meeting link");
       }
 
-      // Share via SMS (placeholder)
+      // Share via SMS
       function shareViaSms() {
+        const link = `${window.location.origin}/meeting.html?room=${encodeURIComponent(room)}`;
+        window.open(`sms:?body=Join my meeting: ${link}`);
         showNotification("Opening SMS to share meeting link");
       }
 
-      // Show notification
+      // Show Notification
       function showNotification(message) {
-        notificationMessage.textContent = message;
-        notificationToast.classList.remove("hidden");
-        setTimeout(() => notificationToast.classList.add("hidden"), 3000);
+        elements.notificationMessage.textContent = sanitizeInput(message);
+        elements.notificationToast.classList.remove("hidden");
+        setTimeout(
+          () => elements.notificationToast.classList.add("hidden"),
+          3000
+        );
       }
 
-      // Show invite friends modal
+      // Show Invite Friends Modal
       function showInviteFriendsModal() {
         updateMeetingLink();
-        inviteFriendsModal.classList.remove("hidden");
+        elements.inviteFriendsModal.classList.remove("hidden");
       }
 
-      // Hide invite friends modal
+      // Hide Invite Friends Modal
       function hideInviteFriendsModal() {
-        inviteFriendsModal.classList.add("hidden");
+        elements.inviteFriendsModal.classList.add("hidden");
       }
 
-      // Toggle remote mute (placeholder)
+      // Toggle Remote Mute
       function toggleRemoteMute(participantId) {
-        const name = participantNames.get(participantId) || "participant";
-        showNotification(`Toggled mute for ${name}`);
+        socket.emit("toggle-remote-mute", { room, participantId });
+        showNotification(
+          `Requested mute toggle for ${
+            state.participantNames.get(participantId) || "participant"
+          }`
+        );
       }
 
-      // Toggle remote video (placeholder)
+      // Toggle Remote Video
       function toggleRemoteVideo(participantId) {
-        const name = participantNames.get(participantId) || "participant";
-        showNotification(`Toggled video for ${name}`);
+        socket.emit("toggle-remote-video", { room, participantId });
+        showNotification(
+          `Requested video toggle for ${
+            state.participantNames.get(participantId) || "participant"
+          }`
+        );
       }
 
-      // Update participant list
+      // Update Participant List
       function updateParticipantList() {
-        participantsList.innerHTML = "";
-
-        // Add local participant
-        addParticipant("local", userName, isHost, isHandRaised);
-
-        // Add remote participants
-        for (let id in peers) {
-          const name = participantNames.get(id) || "Anonymous";
-          const handRaised = peerStreams[id]?.handRaised || false;
+        elements.participantsList.innerHTML = "";
+        addParticipant("local", userName, state.isHost, state.isHandRaised);
+        state.peers.forEach((_, id) => {
+          const name = state.participantNames.get(id) || "Anonymous";
+          const handRaised = state.peerStreams.get(id)?.handRaised || false;
           addParticipant(id, name, false, handRaised);
-        }
+        });
       }
 
-      // Leave call
+      // Leave Call
       function leaveCall() {
         if (confirm("Are you sure you want to leave the meeting?")) {
-          cleanupAndRedirect();
+          cleanup();
+          window.location.href = "/";
         }
       }
 
-      // End call (host only)
+      // End Call
       function endCall() {
-        if (!isHost) {
+        if (!state.isHost) {
           showNotification("Only the host can end the meeting");
           return;
         }
         if (confirm("Are you sure you want to end the meeting for everyone?")) {
           socket.emit("end-meeting", { room });
-          cleanupAndRedirect();
+          cleanup();
+          window.location.href = "/";
         }
       }
 
-      // Return to home screen
+      // Return to Home Screen
       function returnToHomeScreen() {
         if (confirm("Are you sure you want to leave the meeting?")) {
-          cleanupAndRedirect();
+          cleanup();
+          window.location.href = "/";
         }
       }
 
-      // Cleanup and redirect
-      function cleanupAndRedirect() {
-        if (localStream) {
-          localStream.getTracks().forEach((track) => track.stop());
+      // Cleanup Resources
+      function cleanup() {
+        if (state.cleanupInterval) {
+          clearInterval(state.cleanupInterval);
+          state.cleanupInterval = null;
         }
-        if (screenStream) {
-          screenStream.getTracks().forEach((track) => track.stop());
+
+        if (state.localStream) {
+          state.localStream.getTracks().forEach((track) => track.stop());
+          state.localStream = null;
         }
-        for (let id in peers) {
-          peers[id].close();
+
+        if (state.screenStream) {
+          state.screenStream.getTracks().forEach((track) => track.stop());
+          state.screenStream = null;
         }
+
+        state.peers.forEach((pc) => pc.close());
+        state.peers.clear();
+
+        state.peerStreams.forEach((stream) =>
+          stream.getTracks().forEach((track) => track.stop())
+        );
+        state.peerStreams.clear();
+
         socket.disconnect();
-        window.location.href = "/";
       }
 
-      // Cleanup stale videos
+      // Cleanup Stale Videos
       function cleanupStaleVideos() {
-        const containers = videoGrid.querySelectorAll(
+        const containers = elements.videoGrid.querySelectorAll(
           '[id^="video-container-"]'
         );
         containers.forEach((container) => {
           const id = container.id.replace("video-container-", "");
           if (id === "local") return;
-          if (!peers[id] && !peerStreams[id]) {
+
+          if (!state.peers.has(id) && !state.peerStreams.has(id)) {
             container.remove();
             updateVideoGridLayout();
-          } else {
-            const video = container.querySelector("video");
-            if (video && (!video.srcObject || !video.srcObject.active)) {
-              container.remove();
-              updateVideoGridLayout();
-            }
+            return;
+          }
+
+          const video = container.querySelector("video");
+          if (video && (!video.srcObject || !video.srcObject.active)) {
+            container.remove();
+            updateVideoGridLayout();
           }
         });
       }
 
-      // Create peer connection
+      // Create Peer Connection
       function createPeerConnection(peerId, peerName, initiator) {
         const pc = new RTCPeerConnection(config);
 
         pc.onconnectionstatechange = () => {
-          if (pc.connectionState === "failed") {
-            const name = participantNames.get(peerId) || "A participant";
-            showNotification(`${name}'s connection failed`);
+          if (
+            pc.connectionState === "failed" ||
+            pc.connectionState === "disconnected"
+          ) {
+            showNotification(
+              `${
+                state.participantNames.get(peerId) || "A participant"
+              }'s connection failed`
+            );
+            cleanupParticipant(peerId);
           }
         };
 
-        if (localStream) {
-          localStream
+        pc.oniceconnectionstatechange = () => {
+          if (pc.iceConnectionState === "failed") {
+            pc.restartIce();
+          }
+        };
+
+        if (state.localStream) {
+          state.localStream
             .getTracks()
-            .forEach((track) => pc.addTrack(track, localStream));
+            .forEach((track) => pc.addTrack(track, state.localStream));
         }
 
         pc.ontrack = (event) => {
-          if (!peerStreams[peerId]) {
-            peerStreams[peerId] = new MediaStream();
-            peerStreams[peerId].name =
-              peerName || participantNames.get(peerId) || "Anonymous";
+          if (!state.peerStreams.has(peerId)) {
+            state.peerStreams.set(peerId, new MediaStream());
+            state.peerStreams.get(peerId).name =
+              peerName || state.participantNames.get(peerId) || "Anonymous";
             createVideoElement(
               peerId,
-              peerStreams[peerId].name,
-              peerStreams[peerId]
+              state.peerStreams.get(peerId).name,
+              state.peerStreams.get(peerId)
             );
-            addParticipant(peerId, peerStreams[peerId].name, false, false);
+            addParticipant(
+              peerId,
+              state.peerStreams.get(peerId).name,
+              false,
+              false
+            );
           }
-          peerStreams[peerId].addTrack(event.track);
+          state.peerStreams.get(peerId).addTrack(event.track);
         };
 
         pc.onicecandidate = (event) => {
@@ -1880,169 +2094,224 @@
                 name: userName,
               });
             } catch (e) {
-              showNotification("Failed to establish connection.");
+              showNotification("Failed to establish connection");
             }
           };
         }
 
+        state.peers.set(peerId, pc);
         return pc;
       }
 
-      socket.on("user-disconnected", (id) => {
-        if (id === socket.id) return;
+      // Setup Socket Events
+      function setupSocketEvents() {
+        socket.on("connect_error", () => {
+          showNotification("Connection to server failed. Retrying...");
+        });
 
-        const participantName = participantNames.get(id) || "Anonymous";
-        showNotification(`${participantName} has left the meeting`);
-        cleanupParticipant(id);
-      });
+        socket.on("user-disconnected", (id) => {
+          if (id === socket.id) return;
+          const participantName = state.participantNames.get(id) || "Anonymous";
+          showNotification(`${participantName} has left the meeting`);
+          cleanupParticipant(id);
+        });
 
-      // Update the peer connection state change handler to be less aggressive
+        socket.on("all-users", (users) => {
+          users.forEach((user) => {
+            if (user.id !== socket.id) {
+              state.participantNames.set(
+                user.id,
+                sanitizeInput(user.name || "Anonymous")
+              );
+              createPeerConnection(user.id, user.name, true);
+            }
+          });
+        });
 
-      function cleanupParticipant(id) {
-        // Remove peer connection
-        if (peers[id]) {
-          peers[id].close();
-          delete peers[id];
-        }
-
-        // Remove media stream
-        if (peerStreams[id]) {
-          peerStreams[id].getTracks().forEach((track) => track.stop());
-          delete peerStreams[id];
-        }
-
-        // Remove video container
-        const videoContainer = document.getElementById(`video-container-${id}`);
-        if (videoContainer) {
-          // Remove any reaction animations first
-          const reactions = videoContainer.querySelectorAll(
-            ".reaction-animation"
+        socket.on("user-connected", ({ id, name }) => {
+          if (id === socket.id) return;
+          state.participantNames.set(id, sanitizeInput(name || "Anonymous"));
+          createPeerConnection(id, name, false);
+          showNotification(
+            `${state.participantNames.get(id)} has joined the meeting`
           );
-          reactions.forEach((el) => el.remove());
+          updateParticipantList();
+        });
 
-          // Remove the video element
-          videoContainer.remove();
-          updateVideoGridLayout();
+        socket.on("signal", async (data) => {
+          if (data.from === socket.id) return;
+          let pc = state.peers.get(data.from);
+          if (!pc) {
+            state.participantNames.set(
+              data.from,
+              sanitizeInput(data.name || "Anonymous")
+            );
+            pc = createPeerConnection(data.from, data.name, false);
+          }
+
+          try {
+            if (data.signal.type === "offer") {
+              await pc.setRemoteDescription(
+                new RTCSessionDescription(data.signal)
+              );
+              const answer = await pc.createAnswer();
+              await pc.setLocalDescription(answer);
+              socket.emit("signal", {
+                to: data.from,
+                signal: pc.localDescription,
+                name: userName,
+              });
+            } else if (data.signal.type === "answer") {
+              await pc.setRemoteDescription(
+                new RTCSessionDescription(data.signal)
+              );
+            } else if (data.signal.candidate) {
+              await pc.addIceCandidate(
+                new RTCIceCandidate(data.signal.candidate)
+              );
+            }
+          } catch (err) {
+            showNotification("Failed to process signaling data");
+          }
+        });
+
+        socket.on("chat-message", ({ name, message, time }) => {
+          addChatMessage(name, message, time);
+        });
+
+        socket.on("reaction", ({ name, emoji }) => {
+          showReaction(emoji, name);
+        });
+
+        socket.on("end-meeting", () => {
+                    showNotification("The meeting has been ended by the host");
+          cleanup();
+          setTimeout(() => (window.location.href = "/"), 2000);
+        });
+
+        socket.on("toggle-hand", ({ participantId, raised }) => {
+          if (participantId !== socket.id) {
+            state.peerStreams.get(participantId).handRaised = raised;
+            updateParticipantList();
+            showNotification(
+              `${
+                state.participantNames.get(participantId) || "A participant"
+              } ${raised ? "raised their hand" : "lowered their hand"}`
+            );
+          }
+        });
+
+        socket.on("toggle-mic", ({ participantId, micOn }) => {
+          if (participantId !== socket.id) {
+            const stream = state.peerStreams.get(participantId);
+            if (stream) {
+              stream.getAudioTracks().forEach((track) => {
+                track.enabled = micOn;
+              });
+              showNotification(
+                `${
+                  state.participantNames.get(participantId) || "A participant"
+                } ${micOn ? "unmuted their mic" : "muted their mic"}`
+              );
+            }
+          }
+        });
+
+        socket.on("toggle-camera", ({ participantId, cameraOn }) => {
+          if (participantId !== socket.id) {
+            const stream = state.peerStreams.get(participantId);
+            if (stream) {
+              stream.getVideoTracks().forEach((track) => {
+                track.enabled = cameraOn;
+              });
+              showNotification(
+                `${
+                  state.participantNames.get(participantId) || "A participant"
+                } ${cameraOn ? "turned on their camera" : "turned off their camera"}`
+              );
+            }
+          }
+        });
+
+        socket.on("screen-share", ({ participantId, sharing }) => {
+          if (participantId !== socket.id) {
+            if (sharing) {
+              showNotification(
+                `${
+                  state.participantNames.get(participantId) || "A participant"
+                } started sharing their screen`
+              );
+              elements.screenShareOverlay.classList.remove("hidden");
+            } else {
+              showNotification(
+                `${
+                  state.participantNames.get(participantId) || "A participant"
+                } stopped sharing their screen`
+              );
+              elements.screenShareOverlay.classList.add("hidden");
+            }
+          }
+        });
+
+        socket.on("toggle-recording", ({ participantId, recording }) => {
+          if (participantId !== socket.id) {
+            showNotification(
+              `${
+                state.participantNames.get(participantId) || "A participant"
+              } ${recording ? "started recording" : "stopped recording"}`
+            );
+          }
+        });
+
+        socket.on("toggle-remote-mute", ({ participantId }) => {
+          if (participantId === socket.id) {
+            toggleMic();
+          }
+        });
+
+        socket.on("toggle-remote-video", ({ participantId }) => {
+          if (participantId === socket.id) {
+            toggleCamera();
+          }
+        });
+      }
+
+      // Cleanup Participant
+      function cleanupParticipant(peerId) {
+        const pc = state.peers.get(peerId);
+        if (pc) {
+          pc.close();
+          state.peers.delete(peerId);
         }
 
-        // Remove participant from list
-        const participantElement = participantsList.querySelector(
-          `[data-id="${id}"`
+        const stream = state.peerStreams.get(peerId);
+        if (stream) {
+          stream.getTracks().forEach((track) => track.stop());
+          state.peerStreams.delete(peerId);
+        }
+
+        state.participantNames.delete(peerId);
+
+        const videoContainer = document.getElementById(
+          `video-container-${peerId}`
+        );
+        if (videoContainer) {
+          videoContainer.remove();
+        }
+
+        const participantElement = elements.participantsList.querySelector(
+          `[data-id="${peerId}"]`
         );
         if (participantElement) {
           participantElement.remove();
         }
 
-        // Clean up name tracking
-        participantNames.delete(id);
-
-        // Update UI
+        updateVideoGridLayout();
         updateParticipantCount();
       }
 
-      // Socket.IO event handlers
-      socket.on("all-users", (users) => {
-        users.forEach((user) => {
-          if (user.id !== socket.id) {
-            // Don't connect to ourselves
-            participantNames.set(user.id, user.name || "Anonymous");
-            const pc = createPeerConnection(user.id, user.name, true);
-            peers[user.id] = pc;
-          }
-        });
-      });
-
-      socket.on("user-connected", ({ id, name }) => {
-        if (id === socket.id) return;
-
-        // Store the participant name
-        participantNames.set(id, name || "Anonymous");
-
-        const pc = createPeerConnection(id, name, false);
-        peers[id] = pc;
-
-        showNotification(`${participantNames.get(id)} has joined the meeting`);
-        updateParticipantList();
-      });
-
-      socket.on("signal", async (data) => {
-        if (data.from === socket.id) return; // Skip our own signals
-
-        let pc = peers[data.from];
-        if (!pc) {
-          participantNames.set(data.from, data.name || "Anonymous");
-          pc = createPeerConnection(data.from, data.name, false);
-          peers[data.from] = pc;
-        }
-
-        try {
-          if (data.signal.type === "offer") {
-            await pc.setRemoteDescription(
-              new RTCSessionDescription(data.signal)
-            );
-            const answer = await pc.createAnswer();
-            await pc.setLocalDescription(answer);
-            socket.emit("signal", {
-              to: data.from,
-              signal: pc.localDescription,
-              name: userName,
-            });
-          } else if (data.signal.type === "answer") {
-            await pc.setRemoteDescription(
-              new RTCSessionDescription(data.signal)
-            );
-          } else if (data.signal.candidate) {
-            await pc.addIceCandidate(
-              new RTCIceCandidate(data.signal.candidate)
-            );
-          }
-        } catch (err) {
-          showNotification("Failed to establish connection with a peer.");
-        }
-      });
-
-      socket.on("chat-message", ({ name, message, time }) => {
-        addChatMessage(name, message, time);
-      });
-
-      socket.on("reaction", ({ name, emoji }) => {
-        showReaction(emoji, name);
-      });
-
-      socket.on("end-meeting", () => {
-        showNotification("The meeting has been ended by the host");
-        cleanupAndRedirect();
-      });
-
-      socket.on("toggle-hand", ({ id, name, raised }) => {
-        if (peerStreams[id]) {
-          peerStreams[id].handRaised = raised;
-        }
-        const participant = participantsList.querySelector(`[data-id="${id}"]`);
-        if (participant) {
-          const handBadge = participant.querySelector(".bg-yellow-500");
-          if (raised && !handBadge) {
-            const badge = document.createElement("span");
-            badge.className =
-              "text-xs bg-yellow-500 text-yellow-900 px-1 rounded";
-            badge.textContent = "Hand raised";
-            participant.querySelector(".flex.items-center").appendChild(badge);
-          } else if (!raised && handBadge) {
-            handBadge.remove();
-          }
-        }
-        showNotification(
-          `${name || participantNames.get(id) || "A participant"} ${
-            raised ? "raised their hand" : "lowered their hand"
-          }`
-        );
-      });
-
-      // Handle window resize
-      window.addEventListener("resize", updateVideoGridLayout);
-
-      // Initialize the app
-      document.addEventListener("DOMContentLoaded", init);
+      // Initialize the application
+      init();
     </script>
   </body>
 </html>

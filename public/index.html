@@ -111,6 +111,8 @@
     }
     .home-screen {
       background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 100%);
+      min-height: 100vh;
+      overflow-y: auto;
     }
     .meeting-card {
       transition: all 0.3s ease;
@@ -185,9 +187,9 @@
     }
   </style>
 </head>
-<body class="bg-gray-900 text-white h-screen flex flex-col">
+<body class="bg-gray-900 text-white">
   <!-- Home Screen -->
-  <div class="fixed inset-0 home-screen background-pattern flex flex-col items-center justify-center z-50" id="home-screen">
+  <div class="home-screen background-pattern flex flex-col items-center justify-center py-8" id="home-screen">
     <div class="text-center mb-12">
       <div class="flex items-center justify-center mb-6">
         <i class="fas fa-video text-blue-300 text-5xl mr-4"></i>
@@ -273,10 +275,29 @@
       </div>
     </div>
 
-    <div class="absolute bottom-8 right-8">
+    <div class="fixed bottom-8 right-8">
       <button class="floating-button w-14 h-14 rounded-full bg-blue-600 hover:bg-blue-700 text-white flex items-center justify-center text-xl" id="invite-friends-btn">
         <i class="fas fa-user-plus"></i>
       </button>
+    </div>
+  </div>
+
+  <!-- New Meeting Modal -->
+  <div class="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 hidden" id="new-meeting-modal">
+    <div class="bg-gray-800 rounded-lg p-6 w-full max-w-md">
+      <h2 class="text-xl font-bold mb-4">Start New Meeting</h2>
+      <div class="mb-4">
+        <label class="block text-sm font-medium mb-1">Your Name</label>
+        <input type="text" class="w-full bg-gray-700 border border-gray-600 rounded px-3 py-2" id="new-meeting-name" placeholder="Enter your name">
+      </div>
+      <div class="flex justify-end space-x-2">
+        <button class="px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded" id="cancel-new-meeting">
+          Cancel
+        </button>
+        <button class="px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded" id="confirm-new-meeting">
+          Start Meeting
+        </button>
+      </div>
     </div>
   </div>
 
@@ -303,7 +324,7 @@
       <div class="mb-4">
         <label class="block text-sm font-medium mb-2">Invite via Email</label>
         <div class="flex space-x-2">
-          <input type="email" placeholder="Enter email addresses" class="flex-1 bg-gray-700 border border-gray-600 rounded px-3 py-2 text-sm" id="invite-emails">
+          <input type="email" placeholder="Enter email addresses" class="flex-1 bg-gray-700 border border-gray-600 rounded px-3 py-2 text-sm" id="invite-emails" multiple>
           <button class="bg-blue-600 hover:bg-blue-700 px-3 py-2 rounded text-sm" id="send-invites">
             <i class="fas fa-paper-plane"></i>
           </button>
@@ -359,7 +380,7 @@
         </button>
         <button class="px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded" id="confirm-join">
           Join
-        </button>
+        </<|control88|>>
       </div>
     </div>
   </div>
@@ -434,19 +455,32 @@
     const shareCopy = document.getElementById('share-copy');
     const joinMeetingModal = document.getElementById('join-meeting-modal');
     const scheduleMeetingModal = document.getElementById('schedule-meeting-modal');
+    const newMeetingModal = document.getElementById('new-meeting-modal');
     const confirmJoinBtn = document.getElementById('confirm-join');
     const cancelJoinBtn = document.getElementById('cancel-join');
     const confirmScheduleBtn = document.getElementById('confirm-schedule');
     const cancelScheduleBtn = document.getElementById('cancel-schedule');
+    const confirmNewMeetingBtn = document.getElementById('confirm-new-meeting');
+    const cancelNewMeetingBtn = document.getElementById('cancel-new-meeting');
     const joinMeetingId = document.getElementById('join-meeting-id');
     const participantNameInput = document.getElementById('participant-name');
     const joinWithVideo = document.getElementById('join-with-video');
     const notificationToast = document.getElementById('notification-toast');
     const notificationMessage = document.getElementById('notification-message');
+    const newMeetingNameInput = document.getElementById('new-meeting-name');
+
+    // Input Sanitization
+    function sanitizeInput(input) {
+      const div = document.createElement('div');
+      div.textContent = input;
+      return div.innerHTML;
+    }
 
     // Initialize
     function init() {
-      newMeetingBtn.addEventListener('click', startNewMeeting);
+      newMeetingBtn.addEventListener('click', showNewMeetingModal);
+      confirmNewMeetingBtn.addEventListener('click', startNewMeeting);
+      cancelNewMeetingBtn.addEventListener('click', () => newMeetingModal.classList.add('hidden'));
       joinMeetingHomeBtn.addEventListener('click', showJoinMeetingModal);
       scheduleMeetingBtn.addEventListener('click', showScheduleMeetingModal);
       inviteFriendsBtn.addEventListener('click', showInviteFriendsModal);
@@ -461,6 +495,17 @@
       cancelJoinBtn.addEventListener('click', () => joinMeetingModal.classList.add('hidden'));
       confirmScheduleBtn.addEventListener('click', scheduleMeeting);
       cancelScheduleBtn.addEventListener('click', () => scheduleMeetingModal.classList.add('hidden'));
+
+      // Handle Enter key for inputs
+      newMeetingNameInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') startNewMeeting();
+      });
+      participantNameInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') joinMeeting();
+      });
+      joinMeetingId.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') joinMeeting();
+      });
     }
 
     // Generate meeting ID
@@ -479,30 +524,62 @@
       meetingLink.value = link;
     }
 
+    // Show new meeting modal
+    function showNewMeetingModal() {
+      newMeetingModal.classList.remove('hidden');
+      newMeetingNameInput.value = sessionStorage.getItem('userName') || '';
+      newMeetingNameInput.focus();
+    }
+
     // Start new meeting
     function startNewMeeting() {
-      const userName = prompt('Enter your name:');
-      if (!userName) return showNotification('Please enter your name.');
+      const userName = newMeetingNameInput.value.trim();
+      if (!userName) {
+        showNotification('Please enter a valid name.');
+        return;
+      }
+      const sanitizedName = sanitizeInput(userName);
+      if (sanitizedName.length > 50) {
+        showNotification('Name must be 50 characters or less.');
+        return;
+      }
+      sessionStorage.setItem('userName', sanitizedName);
       const room = generateMeetingId();
-      window.location.href = `/meeting.html?room=${encodeURIComponent(room)}&name=${encodeURIComponent(userName)}`;
+      newMeetingModal.classList.add('hidden');
+      window.location.href = `/meeting.html?room=${encodeURIComponent(room)}`;
     }
 
     // Show join meeting modal
     function showJoinMeetingModal() {
       joinMeetingModal.classList.remove('hidden');
+      participantNameInput.value = sessionStorage.getItem('userName') || '';
+      participantNameInput.focus();
     }
 
     // Join meeting
     function joinMeeting() {
       const room = joinMeetingId.value.trim();
       const userName = participantNameInput.value.trim();
-      if (!room || !userName) return showNotification('Please enter meeting ID and name.');
+      if (!room) {
+        showNotification('Please enter a meeting ID.');
+        return;
+      }
+      if (!userName) {
+        showNotification('Please enter your name.');
+        return;
+      }
+      const sanitizedName = sanitizeInput(userName);
+      if (sanitizedName.length > 50) {
+        showNotification('Name must be 50 characters or less.');
+        return;
+      }
+      sessionStorage.setItem('userName', sanitizedName);
       socket.emit('check-room', room, (exists) => {
         if (!exists && !confirm('Room does not exist. Create a new room?')) {
           showNotification('Room does not exist.');
           return;
         }
-        window.location.href = `/meeting.html?room=${encodeURIComponent(room)}&name=${encodeURIComponent(userName)}`;
+        window.location.href = `/meeting.html?room=${encodeURIComponent(room)}`;
       });
       joinMeetingModal.classList.add('hidden');
     }
@@ -510,10 +587,36 @@
     // Show schedule meeting modal
     function showScheduleMeetingModal() {
       scheduleMeetingModal.classList.remove('hidden');
+      const today = new Date().toISOString().split('T')[0];
+      document.getElementById('schedule-date').value = today;
     }
 
-    // Schedule meeting (placeholder)
+    // Schedule meeting
     function scheduleMeeting() {
+      const title = document.getElementById('schedule-title').value.trim();
+      const date = document.getElementById('schedule-date').value;
+      const time = document.getElementById('schedule-time').value;
+      const duration = document.getElementById('schedule-duration').value;
+      const invitees = document.getElementById('schedule-invitees').value.trim();
+      
+      if (!title || !date || !time) {
+        showNotification('Please fill in all required fields.');
+        return;
+      }
+
+      const room = generateMeetingId();
+      const sanitizedTitle = sanitizeInput(title);
+      const sanitizedInvitees = sanitizeInput(invitees);
+      
+      socket.emit('schedule-meeting', {
+        room,
+        title: sanitizedTitle,
+        date,
+        time,
+        duration,
+        invitees: sanitizedInvitees.split(',').map(email => email.trim()).filter(email => email)
+      });
+
       showNotification('Meeting scheduled successfully');
       scheduleMeetingModal.classList.add('hidden');
     }
@@ -531,52 +634,72 @@
 
     // Copy meeting link
     function copyMeetingLinkToClipboard() {
-      if (!meetingLink.value) return showNotification('No meeting link available');
+      if (!meetingLink.value) {
+        showNotification('No meeting link available');
+        return;
+      }
       navigator.clipboard.writeText(meetingLink.value)
         .then(() => showNotification('Meeting link copied to clipboard'))
         .catch(() => showNotification('Failed to copy meeting link'));
     }
 
-    // Send email invites (placeholder)
+    // Send email invites
     function sendEmailInvites() {
       const emails = inviteEmails.value.trim();
-      if (emails) {
-        showNotification(`Invites sent to: ${emails}`);
-        inviteEmails.value = '';
-        hideInviteFriendsModal();
-      } else {
+      if (!emails) {
         showNotification('Please enter at least one email address');
+        return;
       }
+      const emailList = emails.split(',').map(email => email.trim()).filter(email => email);
+      if (emailList.length === 0) {
+        showNotification('Please enter valid email addresses');
+        return;
+      }
+      socket.emit('send-invites', { emails: emailList, link: meetingLink.value });
+      showNotification(`Invites sent to: ${emailList.join(', ')}`);
+      inviteEmails.value = '';
+      hideInviteFriendsModal();
     }
 
-    // Share via WhatsApp (placeholder)
+    // Share via WhatsApp
     function shareViaWhatsapp() {
+      if (!meetingLink.value) {
+        showNotification('No meeting link available');
+        return;
+      }
+      const encodedLink = encodeURIComponent(meetingLink.value);
+      window.open(`https://wa.me/?text=Join my meeting: ${encodedLink}`, '_blank');
       showNotification('Opening WhatsApp to share meeting link');
     }
 
-    // Share via Email (placeholder)
+    // Share via Email
     function shareViaEmail() {
+      if (!meetingLink.value) {
+        showNotification('No meeting link available');
+        return;
+      }
+      const subject = encodeURIComponent('Join My Meeting');
+      const body = encodeURIComponent(`Join my meeting: ${meetingLink.value}`);
+      window.open(`mailto:?subject=${subject}&body=${body}`);
       showNotification('Opening email client to share meeting link');
     }
 
-    // Share via SMS (placeholder)
+    // Share via SMS
     function shareViaSms() {
+      if (!meetingLink.value) {
+        showNotification('No meeting link available');
+        return;
+      }
+      const body = encodeURIComponent(`Join my meeting: ${meetingLink.value}`);
+      window.open(`sms:?body=${body}`);
       showNotification('Opening SMS to share meeting link');
     }
 
     // Show notification
     function showNotification(message) {
-      notificationMessage.textContent = message;
+      notificationMessage.textContent = sanitizeInput(message);
       notificationToast.classList.remove('hidden');
       setTimeout(() => notificationToast.classList.add('hidden'), 3000);
-    }
-
-    // Check for query parameters and redirect
-    const urlParams = new URLSearchParams(window.location.search);
-    const room = urlParams.get('room');
-    const name = urlParams.get('name');
-    if (room && name) {
-      window.location.href = `/meeting.html?room=${encodeURIComponent(room)}&name=${encodeURIComponent(name)}`;
     }
 
     document.addEventListener('DOMContentLoaded', init);
