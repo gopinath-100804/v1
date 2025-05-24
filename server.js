@@ -1,4 +1,4 @@
-// server.js - Node.js + Express + HTTPS + Socket.io
+// server.js - Node.js + Express + HTTPs + Socket.io
 
 const fs = require('fs');
 const https = require('https');
@@ -61,6 +61,6 @@ io.on('connection', socket => {
   });
 });
 
-server.listen(3443, '0.0.0.0', () => {
-  console.log('Server running at https://0.0.0.0:3443');
+server.listen(3000, '0.0.0.0', () => {
+  console.log('Server running at https://10.0.14.159:3000');
 });
