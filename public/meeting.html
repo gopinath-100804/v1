@@ -1832,64 +1832,9 @@
         const pc = new RTCPeerConnection(config);
 
         pc.onconnectionstatechange = () => {
-          if (
-            pc.connectionState === "disconnected" ||
-            pc.connectionState === "failed"
-          ) {
+          if (pc.connectionState === "failed") {
             const name = participantNames.get(peerId) || "A participant";
-            showNotification(`${name} has disconnected`);
-
-            const videoContainer = document.getElementById(
-              `video-container-${peerId}`
-            );
-            if (videoContainer) {
-              // Remove video element
-              const video = videoContainer.querySelector("video");
-              if (video) {
-                video.srcObject = null;
-                video.remove();
-              }
-
-              // Update name label to indicate left
-              const nameLabel =
-                videoContainer.querySelector(".participant-name");
-              if (nameLabel) {
-                nameLabel.textContent = `${name} has left`;
-              }
-
-              // Remove control buttons
-              const controls = videoContainer.querySelector(
-                ".participant-controls"
-              );
-              if (controls) {
-                controls.remove();
-              }
-
-              // Optional: visually dim or style the container
-              videoContainer.classList.add("bg-gray-800");
-            }
-
-            // Also update participant list if needed
-            const participantElement = participantsList.querySelector(
-              `[data-id="${peerId}"]`
-            );
-            if (participantElement) {
-              participantElement.remove();
-              updateParticipantCount();
-            }
-
-            // Clean peer data but not the UI container
-            if (peers[peerId]) {
-              peers[peerId].close();
-              delete peers[peerId];
-            }
-
-            if (peerStreams[peerId]) {
-              peerStreams[peerId].getTracks().forEach((track) => track.stop());
-              delete peerStreams[peerId];
-            }
-
-            participantNames.delete(peerId);
+            showNotification(`${name}'s connection failed`);
           }
         };
 
@@ -1943,6 +1888,16 @@
         return pc;
       }
 
+      socket.on("user-disconnected", (id) => {
+        if (id === socket.id) return;
+
+        const participantName = participantNames.get(id) || "Anonymous";
+        showNotification(`${participantName} has left the meeting`);
+        cleanupParticipant(id);
+      });
+
+      // Update the peer connection state change handler to be less aggressive
+
       function cleanupParticipant(id) {
         // Remove peer connection
         if (peers[id]) {
@@ -1959,13 +1914,20 @@
         // Remove video container
         const videoContainer = document.getElementById(`video-container-${id}`);
         if (videoContainer) {
+          // Remove any reaction animations first
+          const reactions = videoContainer.querySelectorAll(
+            ".reaction-animation"
+          );
+          reactions.forEach((el) => el.remove());
+
+          // Remove the video element
           videoContainer.remove();
           updateVideoGridLayout();
         }
 
         // Remove participant from list
         const participantElement = participantsList.querySelector(
-          `[data-id="${id}"]`
+          `[data-id="${id}"`
         );
         if (participantElement) {
           participantElement.remove();
@@ -2037,38 +1999,6 @@
         } catch (err) {
           showNotification("Failed to establish connection with a peer.");
         }
-      });
-
-      socket.on("user-disconnected", ({ id }) => {
-        const participantName = participantNames.get(id) || "A participant";
-
-        const videoContainer = document.getElementById(`video-container-${id}`);
-        if (videoContainer) {
-          videoContainer.remove();
-          updateVideoGridLayout();
-        }
-
-        showNotification(`${participantName} has left the meeting`);
-
-        const participantElement = participantsList.querySelector(
-          `[data-id="${id}"]`
-        );
-        if (participantElement) {
-          participantElement.remove();
-        }
-
-        if (peers[id]) {
-          peers[id].close();
-          delete peers[id];
-        }
-
-        if (peerStreams[id]) {
-          peerStreams[id].getTracks().forEach((track) => track.stop());
-          delete peerStreams[id];
-        }
-
-        participantNames.delete(id);
-        updateParticipantCount();
       });
 
       socket.on("chat-message", ({ name, message, time }) => {
