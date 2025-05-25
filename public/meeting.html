@@ -987,7 +987,6 @@
 
 
   <script src="/socket.io/socket.io.js"></script>
-  <script src="/socket.io/socket.io.js"></script>
   <script>
     // Initialize Socket.IO with reconnection handling
     const socket = io({
@@ -1279,6 +1278,14 @@
         await startLocalMedia();
         socket.emit("join-room", { room, name: userName });
 
+        // Check with server to determine if this user is the host
+        socket.emit("check-host", { room }, (response) => {
+          state.isHost = response.isHost;
+          if (state.isHost) {
+            elements.endCallBtn.classList.remove("hidden"); // Ensure host sees the "End call" button
+          }
+        });
+
         if (state.meetingOptions.muteOnJoin) {
           state.isMicOn = false;
           if (state.localStream) {
@@ -1300,9 +1307,7 @@
 
         socket.emit("get-meeting-options", { room });
         createVideoElement("local", userName, state.localStream, true);
-        addParticipant("local", userName, true, false);
-        state.isHost = true;
-
+        addParticipant("local", userName, state.isHost, false);
         setupSocketEvents();
       } catch (error) {
         showNotification(`Failed to start meeting: ${error.message}`);
@@ -1570,22 +1575,32 @@
       state.participantNames.set(id, sanitizeInput(name || "Anonymous"));
       const existingParticipant = elements.participantsList.querySelector(`[data-id="${id}"]`);
       if (existingParticipant) {
-        existingParticipant.querySelector("span.font-medium").textContent = name;
+        const infoDiv = existingParticipant.querySelector(".flex.items-center.space-x-2");
+        infoDiv.querySelector("span.font-medium").textContent = name;
         const screenShareIndicator = existingParticipant.querySelector(".participant-screen-sharing");
         if (screenShareIndicator) screenShareIndicator.remove();
         const handBadge = existingParticipant.querySelector(".hand-raised-badge");
         if (handBadge) handBadge.remove();
+        const hostBadge = existingParticipant.querySelector(".host-badge");
+        if (hostBadge) hostBadge.remove();
+
         if (isScreenSharing || state.screenSharingParticipant === id) {
           const indicator = document.createElement("span");
           indicator.className = "participant-screen-sharing text-xs bg-green-500 text-white px-1 rounded";
           indicator.textContent = "Screen Sharing";
-          existingParticipant.querySelector(".flex.items-center.space-x-2").appendChild(indicator);
+          infoDiv.appendChild(indicator);
         }
         if (isHandRaised) {
           const handBadge = document.createElement("span");
           handBadge.className = "hand-raised-badge text-xs bg-yellow-500 text-yellow-900 px-1 rounded";
           handBadge.textContent = "Hand raised";
-          existingParticipant.querySelector(".flex.items-center.space-x-2").appendChild(handBadge);
+          infoDiv.appendChild(handBadge);
+        }
+        if (isHost) {
+          const hostBadge = document.createElement("span");
+          hostBadge.className = "host-badge text-xs bg-blue-500 text-white px-1 rounded";
+          hostBadge.textContent = "Host";
+          infoDiv.appendChild(hostBadge);
         }
         return;
       }
@@ -1610,7 +1625,7 @@
 
       if (isHost) {
         const hostBadge = document.createElement("span");
-        hostBadge.className = "text-xs bg-blue-500 text-white px-1 rounded";
+        hostBadge.className = "host-badge text-xs bg-blue-500 text-white px-1 rounded";
         hostBadge.textContent = "Host";
         infoDiv.appendChild(hostBadge);
       }
@@ -2716,14 +2731,29 @@
         cleanupParticipant(id);
       });
 
+      // In setupSocketEvents
       socket.on("all-users", (users, screenSharingParticipant) => {
         state.screenSharingParticipant = screenSharingParticipant?.id || null;
         users.forEach((user) => {
           if (user.id !== socket.id) {
             state.participantNames.set(user.id, sanitizeInput(user.name || "Anonymous"));
+            addParticipant(user.id, user.name, user.isHost || false, false, state.screenSharingParticipant === user.id);
             createPeerConnection(user.id, user.name, true);
           }
         });
+        updateParticipantList();
+      });
+
+      socket.on("user-connected", ({ id, name, isHost }) => {
+        if (id === socket.id) return;
+        state.participantNames.set(id, sanitizeInput(name || "Anonymous"));
+        addParticipant(id, name, isHost || false, false, false);
+        createPeerConnection(id, name, false);
+        showNotification(`${state.participantNames.get(id)} has joined the meeting`);
+
+        if (state.isHost && state.meetingOptions) {
+          socket.emit("apply-meeting-options", { room, participantId: id, ...state.meetingOptions });
+        }
         updateParticipantList();
       });
 
