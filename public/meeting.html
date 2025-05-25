@@ -99,6 +99,10 @@
     @media (min-width: 1025px) {
       #video-grid {
         flex-direction: row;
+        width: 100vw;
+        padding: 0;
+        margin: 0;
+        box-sizing: border-box;
       }
 
       .video-main {
@@ -108,15 +112,17 @@
       }
 
       .video-secondary-container {
+        flex: 1;
         flex-direction: column;
         flex-wrap: wrap;
         overflow-y: auto;
         overflow-x: wrap;
         width: 200px;
-        /* Sidebar width */
+        margin-right: 15px;
         max-height: 100vh;
         padding: 0.5rem;
-        gap: 34px;
+        gap: 1rem;
+        justify-content: space-between;
       }
 
       .video-secondary-container::-webkit-scrollbar {
@@ -126,9 +132,8 @@
 
       .participant-tile {
         width: 100%;
-        min-width: unset;
-        max-height: 120px;
-        /* Smaller height for sidebar videos */
+        max-width: 200px;
+         max-height: 120px;
       }
     }
 
