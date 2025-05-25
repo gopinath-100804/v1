@@ -85,6 +85,10 @@
       border: black solid 1px;
     }
 
+    .camera-video {
+      transform: scaleX(-1);
+    }
+
     /* Hide secondary container if only one participant */
     #video-grid:has(> .video-main:only-child) .video-secondary-container {
       display: none;
@@ -601,10 +605,6 @@
         max-width: 350px;
       }
     }
-
-    .camera-video {
-  transform: scaleX(-1);
-}
   </style>
 </head>
 
