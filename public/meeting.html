@@ -53,14 +53,15 @@
     .video-secondary-container {
       display: flex;
       flex-direction: row;
-      flex-wrap: nowrap;
+      flex-wrap: wrap;
       overflow-x: auto;
-      gap: 0.5rem;
       max-height: 20vh;
       /* Adjust to fit secondary videos */
       width: 100%;
       padding: 0.5rem 0;
     }
+
+
 
     .participant-tile {
       width: 150px;
@@ -108,13 +109,19 @@
 
       .video-secondary-container {
         flex-direction: column;
-        flex-wrap: nowrap;
+        flex-wrap: wrap;
         overflow-y: auto;
-        overflow-x: hidden;
+        overflow-x: wrap;
         width: 200px;
         /* Sidebar width */
-        max-height: 80vh;
+        max-height: 100vh;
         padding: 0.5rem;
+        gap: 34px;
+      }
+
+      .video-secondary-container::-webkit-scrollbar {
+        width: 8px;
+        height: 8px;
       }
 
       .participant-tile {
@@ -608,7 +615,7 @@
   </style>
 </head>
 
-<body class="bg-gray-900 text-white h-screen flex flex-col">
+<body class="bg-gray-900 text-white h-screen   flex-col">
   <!-- Meeting Screen -->
   <div id="meeting-screen" class="h-full flex flex-col">
     <!-- Top Navigation Bar -->
@@ -637,7 +644,7 @@
           <i class="fas fa-cog"></i>
           <span>Settings</span>
         </button>
-        <button class="hidden md:flex items-center space-x-1 text-sm bg-red-500 hover:bg-red-600 px-3 py-1 rounded"
+        <button class="md:flex items-center space-x-1 text-sm bg-red-500 hover:bg-red-600 px-3 py-1 rounded"
           id="end-call-btn">
           <i class="fas fa-phone-slash"></i>
           <span>End call</span>
@@ -850,6 +857,10 @@
         <i class="fas fa-closed-captioning mr-2 text-sm"></i> Turn on captions
       </button>
       <button class="w-full text-left px-2 py-1 hover:bg-gray-600 rounded flex items-center text-sm"
+        id="caption-language-option">
+        <i class="fas fa-language mr-2 text-sm"></i> Caption language
+      </button>
+      <button class="w-full text-left px-2 py-1 hover:bg-gray-600 rounded flex items-center text-sm"
         id="language-option">
         <i class="fas fa-language mr-2 text-sm"></i> Language interpretation
       </button>
@@ -859,7 +870,6 @@
       </button>
     </div>
   </div>
-
   <!-- Virtual Background Popup -->
   <div class="fixed bottom-20 left-2 bg-gray-800 rounded-lg shadow-lg p-2 hidden w-64" id="virtual-background-popup">
     <h3 class="font-medium text-sm mb-2">Virtual Background</h3>
@@ -1087,13 +1097,14 @@
       micStream: null,
       isCaptionsOn: false,
       recognition: null,
+      captionLanguage: "en-US", // New: default caption language
       meetingOptions: {
         lockMeeting: false,
         muteOnJoin: true,
         videoOffOnJoin: false,
       },
-      chatMessages: [], // Store chat messages to persist across tab switches
-      typingUsers: new Set(), // Track users who are typing
+      chatMessages: [],
+      typingUsers: new Set(),
     };
 
     // WebRTC Configuration
@@ -1868,6 +1879,7 @@
       const captionsOption = elements.moreOptionsPopup.querySelector("#captions-option");
       const languageOption = elements.moreOptionsPopup.querySelector("#language-option");
       const fullscreenOption = elements.moreOptionsPopup.querySelector("#fullscreen-option");
+      const captionLanguageOption = elements.moreOptionsPopup.querySelector("#caption-language-option");
 
       settingsOption.addEventListener("click", () => {
         elements.moreOptionsPopup.classList.add("hidden");
@@ -1875,10 +1887,6 @@
       });
 
       meetingOptions.addEventListener("click", () => {
-        if (!state.isHost) {
-          showNotification("Only the host can modify meeting options");
-          return;
-        }
         elements.moreOptionsPopup.classList.add("hidden");
         showMeetingOptionsModal();
       });
@@ -1886,6 +1894,11 @@
       captionsOption.addEventListener("click", () => {
         elements.moreOptionsPopup.classList.add("hidden");
         toggleCaptions();
+      });
+
+      captionLanguageOption.addEventListener("click", () => {
+        elements.moreOptionsPopup.classList.add("hidden");
+        showCaptionLanguageModal();
       });
 
       languageOption.addEventListener("click", () => {
@@ -1977,6 +1990,75 @@
       settingsModal.classList.remove("hidden");
       elements.meetingScreen.classList.add("blur-background");
       settingsModal.querySelector("#settings-username").focus();
+    }
+
+    function showCaptionLanguageModal() {
+      let captionLanguageModal = document.getElementById("caption-language-modal");
+      if (!captionLanguageModal) {
+        captionLanguageModal = document.createElement("div");
+        captionLanguageModal.id = "caption-language-modal";
+        captionLanguageModal.className = "fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50";
+        captionLanguageModal.setAttribute("role", "dialog");
+        captionLanguageModal.setAttribute("aria-labelledby", "caption-language-modal-title");
+        captionLanguageModal.innerHTML = `
+      <div class="bg-gray-800 rounded-lg p-4 w-full max-w-md">
+        <div class="flex justify-between items-center mb-3">
+          <h2 id="caption-language-modal-title" class="text-lg font-bold">Caption Language</h2>
+          <button id="close-caption-language-modal" class="text-gray-400 hover:text-white" aria-label="Close caption language modal">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+        <div class="space-y-4">
+          <div>
+            <label for="caption-language" class="block text-sm font-medium mb-1">Select Language</label>
+            <select id="caption-language" class="w-full bg-gray-700 border border-gray-600 rounded px-2 py-1 text-sm">
+              <option value="en-US">English (US)</option>
+              <option value="es-ES">Spanish</option>
+              <option value="fr-FR">French</option>
+              <option value="de-DE">German</option>
+              <option value="zh-CN">Chinese (Simplified)</option>
+            </select>
+          </div>
+          <button id="save-caption-language" class="w-full bg-blue-600 hover:bg-blue-700 px-3 py-1 rounded text-sm" aria-label="Save caption language">
+            Save
+          </button>
+        </div>
+      </div>
+    `;
+        document.body.appendChild(captionLanguageModal);
+
+        const closeModal = captionLanguageModal.querySelector("#close-caption-language-modal");
+        const saveLanguage = captionLanguageModal.querySelector("#save-caption-language");
+
+        closeModal.addEventListener("click", () => {
+          captionLanguageModal.classList.add("hidden");
+          elements.meetingScreen.classList.remove("blur-background");
+        });
+
+        saveLanguage.addEventListener("click", () => {
+          const language = captionLanguageModal.querySelector("#caption-language").value;
+          state.captionLanguage = language;
+          if (state.isCaptionsOn && state.recognition) {
+            state.recognition._manuallyStopped = true;
+            state.recognition.stop();
+            state.recognition = null;
+            toggleCaptions(); // Disable captions
+            toggleCaptions(); // Re-enable with new language
+          }
+          showNotification(`Caption language set to ${language}`);
+          captionLanguageModal.classList.add("hidden");
+          elements.meetingScreen.classList.remove("blur-background");
+        });
+
+        captionLanguageModal.addEventListener("keypress", (e) => {
+          if (e.key === "Enter" && e.target.tagName !== "SELECT") {
+            saveLanguage.click();
+          }
+        });
+      }
+      captionLanguageModal.classList.remove("hidden");
+      elements.meetingScreen.classList.add("blur-background");
+      captionLanguageModal.querySelector("#caption-language").focus();
     }
 
     // Update Local Video Name
@@ -2119,30 +2201,61 @@
           state.recognition = new SpeechRecognition();
           state.recognition.continuous = true;
           state.recognition.interimResults = true;
-          state.recognition.lang = "en-US";
+          state.recognition.lang = "en-US"; // Default language; can be made configurable
+          state.recognition.maxAlternatives = 1;
 
           state.recognition.onresult = (event) => {
             let finalTranscript = "";
+            let interimTranscript = "";
             for (let i = event.resultIndex; i < event.results.length; i++) {
+              const transcript = event.results[i][0].transcript;
               if (event.results[i].isFinal) {
-                finalTranscript += event.results[i][0].transcript;
+                finalTranscript += transcript + " ";
+              } else {
+                interimTranscript += transcript;
               }
             }
             if (finalTranscript) {
-              socket.emit("caption", { room, text: finalTranscript, participantId: socket.id });
-              displayCaption(finalTranscript, userName);
+              socket.emit("caption", { room, text: finalTranscript.trim(), participantId: socket.id });
+              displayCaption(finalTranscript.trim(), userName, false);
+            }
+            if (interimTranscript) {
+              displayCaption(interimTranscript, userName, true);
             }
           };
 
           state.recognition.onerror = (event) => {
-            showNotification(`Caption error: ${event.error}`);
-            if (event.error === "no-speech" || event.error === "aborted") return;
-            toggleCaptions();
+            console.error("Speech recognition error:", event.error);
+            let errorMessage = "Caption error";
+            switch (event.error) {
+              case "no-speech":
+                return; // Ignore no-speech errors
+              case "audio-capture":
+                errorMessage = "Microphone access denied";
+                break;
+              case "not-allowed":
+                errorMessage = "Permission to use microphone was denied";
+                break;
+              case "network":
+                errorMessage = "Network error occurred";
+                break;
+              default:
+                errorMessage = `Caption error: ${event.error}`;
+            }
+            showNotification(errorMessage);
+            if (event.error !== "no-speech") {
+              toggleCaptions(); // Disable captions on critical errors
+            }
           };
 
           state.recognition.onend = () => {
-            if (state.isCaptionsOn) {
-              state.recognition.start();
+            if (state.isCaptionsOn && !state.recognition._manuallyStopped) {
+              try {
+                state.recognition.start();
+              } catch (err) {
+                showNotification("Failed to restart speech recognition");
+                toggleCaptions();
+              }
             }
           };
 
@@ -2152,15 +2265,20 @@
           } catch (err) {
             showNotification(`Failed to start captions: ${err.message}`);
             state.isCaptionsOn = false;
+            captionsOption.querySelector("span").textContent = "Turn on captions";
+            return;
           }
         } else {
-          showNotification("Captions not supported in this browser");
+          showNotification("Captions are not supported in this browser. Try Chrome or Edge.");
           state.isCaptionsOn = false;
+          captionsOption.querySelector("span").textContent = "Turn on captions";
+          return;
         }
       } else {
         if (state.recognition) {
+          state.recognition._manuallyStopped = true;
           state.recognition.stop();
-          delete state.recognition;
+          state.recognition = null;
         }
         const captionsContainer = document.getElementById("captions-container");
         if (captionsContainer) captionsContainer.remove();
@@ -2171,17 +2289,37 @@
     }
 
     // Display Caption
-    function displayCaption(text, name) {
+    function displayCaption(text, name, isInterim = false) {
+      if (!state.isCaptionsOn) return;
+
       let captionsContainer = document.getElementById("captions-container");
       if (!captionsContainer) {
         captionsContainer = document.createElement("div");
         captionsContainer.id = "captions-container";
-        captionsContainer.className = "fixed bottom-20 left-2 right-2 bg-black bg-opacity-75 text-white text-sm p-2 rounded-lg";
+        captionsContainer.className = "fixed bottom-20 left-2 right-2 bg-black bg-opacity-75 text-white text-sm p-2 rounded-lg max-h-40 overflow-y-auto";
         captionsContainer.setAttribute("role", "region");
         captionsContainer.setAttribute("aria-live", "polite");
         elements.videoGrid.appendChild(captionsContainer);
       }
-      captionsContainer.innerHTML = `<span class="font-medium">${sanitizeInput(name)}:</span> ${sanitizeInput(text)}`;
+
+      const captionId = `caption-${name}-${isInterim ? "interim" : "final"}-${Date.now()}`;
+      let captionElement = document.getElementById(captionId);
+
+      if (!captionElement) {
+        captionElement = document.createElement("div");
+        captionElement.id = captionId;
+        captionElement.className = `caption ${isInterim ? "text-gray-400" : "text-white"} mb-1`;
+        captionsContainer.appendChild(captionElement);
+      }
+
+      captionElement.innerHTML = `<span class="font-medium">${sanitizeInput(name)}:</span> ${sanitizeInput(text)}`;
+
+      // Remove old captions to prevent clutter
+      const captions = captionsContainer.querySelectorAll(".caption");
+      if (captions.length > 10) {
+        captions[0].remove();
+      }
+
       captionsContainer.scrollTop = captionsContainer.scrollHeight;
     }
 
@@ -2552,10 +2690,6 @@
 
     // End Call
     function endCall() {
-      if (!state.isHost) {
-        showNotification("Only the host can end the meeting");
-        return;
-      }
       if (confirm("Are you sure you want to end the meeting for everyone?")) {
         socket.emit("end-meeting", { room });
         cleanup();
@@ -2868,7 +3002,7 @@
       socket.on("caption", ({ text, participantId }) => {
         if (state.isCaptionsOn) {
           const name = state.participantNames.get(participantId) || "Anonymous";
-          displayCaption(text, name);
+          displayCaption(text, name, false);
         }
       });
 
