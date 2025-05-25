@@ -1413,12 +1413,12 @@
           screenShareBadge.textContent = "Screen Sharing";
           existingContainer.appendChild(screenShareBadge);
 
-          if (!isLocal) {
+          if (isLocal) {
             elements.screenShareOverlay.classList.remove("hidden");
             const screenShareVideo = elements.screenShareOverlay.querySelector("video");
             screenShareVideo.srcObject = stream;
             screenShareVideo.classList.remove("camera-video");
-            screenShareVideo.muted = false;
+            screenShareVideo.muted = true;
             screenShareVideo.play().catch((err) => console.error("Screen share video play failed:", err));
           }
         } else {
