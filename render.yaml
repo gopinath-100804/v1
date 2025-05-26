@@ -1,9 +1,0 @@
-services:
-  - type: web
-    name: video-call-app
-    env: node
-    region: oregon
-    plan: free
-    branch: main
-    buildCommand: npm install
-    startCommand: node server.js
