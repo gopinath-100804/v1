@@ -7,11 +7,7 @@ const { Server } = require('socket.io');
 
 const app = express();
 
-// HTTPS certificate options
-const options = {
-  key: fs.readFileSync('./certs/key.pem'),
-  cert: fs.readFileSync('./certs/cert.pem'),
-};
+ 
 
 // Create HTTPS server
 const server = http.createServer(options, app);
