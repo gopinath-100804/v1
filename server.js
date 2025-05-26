@@ -1,7 +1,7 @@
-// server.js - Node.js + Express + HTTPS + Socket.IO
+// server.js - Node.js + Express + https + Socket.IO
 
 const fs = require('fs');
-const http = require('http');
+const https = require('https');
 const express = require('express');
 const { Server } = require('socket.io');
 
@@ -9,8 +9,8 @@ const app = express();
 
  
 
-// Create HTTPS server
-const server = http.createServer(options, app);
+// Create httpsS server
+const server = https.createServer(options, app);
 const io = new Server(server, {
   cors: {
     origin: "*", // Adjust for production (e.g., specify client URL)
@@ -215,5 +215,5 @@ io.on('connection', (socket) => {
 
 // Start server
 server.listen(3000, '0.0.0.0', () => {
-  console.log('Server running at http://localhost:3000');
+  console.log('Server running at https://localhost:3000');
 });
