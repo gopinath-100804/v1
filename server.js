@@ -1,19 +1,15 @@
-// server.js - Node.js + Express + https + Socket.IO
-
 const fs = require('fs');
-const https = require('https');
+const http = require('http'); // Use http instead of https
 const express = require('express');
 const { Server } = require('socket.io');
 
 const app = express();
 
- 
-
-// Create httpsS server
-const server = https.createServer(options, app);
+// Create HTTP server (no SSL certificates needed)
+const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
-    origin: "*", // Adjust for production (e.g., specify client URL)
+    origin: "*", // Adjust for production
     methods: ["GET", "POST"],
   },
 });
@@ -21,18 +17,25 @@ const io = new Server(server, {
 // Serve static files from 'public' directory
 app.use(express.static('public'));
 
-// Room data structure: { room: { users: [{ id, name }], screenSharingParticipant: { id, name } | null, meetingOptions: { lockMeeting, muteOnJoin, videoOffOnJoin } } }
+// Serve index.html for the root route (/) and /meet
+app.get('/', (req, res) => {
+  res.sendFile(__dirname + '/public/index.html');
+});
+
+app.get('/meet', (req, res) => {
+  res.sendFile(__dirname + '/public/index.html');
+});
+
+// Room data structure
 const rooms = new Map();
 
 io.on('connection', (socket) => {
   console.log(`User connected: ${socket.id}`);
 
-  // Check if room exists
   socket.on('check-room', (room, cb) => {
     cb(rooms.has(room));
   });
 
-  // Handle joining a room
   socket.on('join-room', ({ room, name }, callback) => {
     if (!rooms.has(room)) {
       rooms.set(room, {
@@ -48,33 +51,26 @@ io.on('connection', (socket) => {
 
     const roomData = rooms.get(room);
 
-    // Check if meeting is locked
     if (roomData.meetingOptions.lockMeeting && !roomData.users.some((user) => user.id === socket.id)) {
       socket.emit('end-meeting', { reason: 'Meeting is locked' });
       if (callback) callback({ error: 'Meeting is locked' });
       return;
     }
 
-    // Add user to room
     roomData.users.push({ id: socket.id, name: name || 'Anonymous' });
     socket.join(room);
 
-    // Inform existing users about the new user
     socket.to(room).emit('user-connected', { id: socket.id, name });
 
-    // Send existing users and screen-sharing info to the new user
     const usersInRoom = roomData.users
       .filter((user) => user.id !== socket.id)
       .map((user) => ({ id: user.id, name: user.name }));
     socket.emit('all-users', usersInRoom, roomData.screenSharingParticipant);
 
-    // Send current meeting options to the new user
     socket.emit('get-meeting-options', roomData.meetingOptions);
 
-    // Acknowledge successful join
     if (callback) callback({ success: true });
 
-    // Handle WebRTC signaling
     socket.on('signal', ({ to, signal, name }) => {
       io.to(to).emit('signal', {
         from: socket.id,
@@ -83,7 +79,6 @@ io.on('connection', (socket) => {
       });
     });
 
-    // Handle name updates
     socket.on('update-name', ({ room, name }) => {
       const roomData = rooms.get(room);
       if (roomData) {
@@ -95,7 +90,6 @@ io.on('connection', (socket) => {
       }
     });
 
-    // Handle meeting options retrieval
     socket.on('get-meeting-options', ({ room }) => {
       const roomData = rooms.get(room);
       if (roomData) {
@@ -103,10 +97,9 @@ io.on('connection', (socket) => {
       }
     });
 
-    // Handle meeting options updates (host only)
     socket.on('update-meeting-options', ({ room, lockMeeting, muteOnJoin, videoOffOnJoin }) => {
       const roomData = rooms.get(room);
-      if (roomData && roomData.users[0]?.id === socket.id) { // First user is host
+      if (roomData && roomData.users[0]?.id === socket.id) {
         roomData.meetingOptions = { lockMeeting, muteOnJoin, videoOffOnJoin };
         socket.to(room).emit('update-meeting-options', { lockMeeting, muteOnJoin, videoOffOnJoin });
         io.to(room).emit('apply-meeting-options', { lockMeeting, muteOnJoin, videoOffOnJoin });
@@ -115,22 +108,18 @@ io.on('connection', (socket) => {
       }
     });
 
-    // Handle applying meeting options to a specific participant
     socket.on('apply-meeting-options', ({ room, participantId, lockMeeting, muteOnJoin, videoOffOnJoin }) => {
       io.to(participantId).emit('apply-meeting-options', { lockMeeting, muteOnJoin, videoOffOnJoin });
     });
 
-    // Handle captions
     socket.on('caption', ({ room, text, participantId }) => {
       socket.to(room).emit('caption', { text, participantId });
     });
 
-    // Handle language interpretation
     socket.on('start-interpretation', ({ room, language, participantId }) => {
       socket.to(room).emit('start-interpretation', { language, participantId });
     });
 
-    // Handle screen sharing
     socket.on('screen-share', ({ room, sharing, participantId }) => {
       const roomData = rooms.get(room);
       if (roomData) {
@@ -141,57 +130,47 @@ io.on('connection', (socket) => {
       }
     });
 
-    // Handle chat messages
     socket.on('chat-message', ({ room, message, name }) => {
       const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
       socket.to(room).emit('chat-message', { name, message, time });
     });
 
-    // Handle reactions
     socket.on('reaction', ({ room, emoji, name }) => {
       socket.to(room).emit('reaction', { name, emoji });
     });
 
-    // Handle meeting end (host only)
     socket.on('end-meeting', ({ room }) => {
       const roomData = rooms.get(room);
-      if (roomData && roomData.users[0]?.id === socket.id) { // First user is host
+      if (roomData && roomData.users[0]?.id === socket.id) {
         io.to(room).emit('end-meeting', { reason: 'Meeting ended by host' });
         rooms.delete(room);
       }
     });
 
-    // Handle hand raise
     socket.on('toggle-hand', ({ room, raised }) => {
       socket.to(room).emit('toggle-hand', { participantId: socket.id, raised });
     });
 
-    // Handle mic toggle
     socket.on('toggle-mic', ({ room, micOn }) => {
       socket.to(room).emit('toggle-mic', { participantId: socket.id, micOn });
     });
 
-    // Handle camera toggle
     socket.on('toggle-camera', ({ room, cameraOn }) => {
       socket.to(room).emit('toggle-camera', { participantId: socket.id, cameraOn });
     });
 
-    // Handle recording toggle
     socket.on('toggle-recording', ({ room, recording }) => {
       socket.to(room).emit('toggle-recording', { participantId: socket.id, recording });
     });
 
-    // Handle remote mute
     socket.on('toggle-remote-mute', ({ room, participantId }) => {
       io.to(participantId).emit('toggle-remote-mute', { participantId });
     });
 
-    // Handle remote video toggle
     socket.on('toggle-remote-video', ({ room, participantId }) => {
       io.to(participantId).emit('toggle-remote-video', { participantId });
     });
 
-    // Handle disconnection
     socket.on('disconnect', () => {
       rooms.forEach((roomData, room) => {
         const userIndex = roomData.users.findIndex((u) => u.id === socket.id);
@@ -213,7 +192,9 @@ io.on('connection', (socket) => {
   });
 });
 
-// Start server
+// Start server on HTTP
 server.listen(3000, '0.0.0.0', () => {
-  console.log('Server running at https://localhost:3000');
+  console.log('Server running at http://localhost:3000');
 });
+
+ 

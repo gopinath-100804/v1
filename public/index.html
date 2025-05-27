@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -11,11 +12,13 @@
       position: relative;
       width: 100%;
       height: 0;
-      padding-bottom: 56.25%; /* 16:9 aspect ratio */
+      padding-bottom: 56.25%;
+      /* 16:9 aspect ratio */
       background-color: #1a202c;
       border-radius: 8px;
       overflow: hidden;
     }
+
     .video-container video {
       position: absolute;
       top: 0;
@@ -24,6 +27,7 @@
       height: 100%;
       object-fit: cover;
     }
+
     .participant-tile {
       position: relative;
       width: 100%;
@@ -33,6 +37,7 @@
       border-radius: 8px;
       overflow: hidden;
     }
+
     .participant-tile video {
       position: absolute;
       top: 0;
@@ -41,6 +46,7 @@
       height: 100%;
       object-fit: cover;
     }
+
     .participant-name {
       position: absolute;
       bottom: 8px;
@@ -51,6 +57,7 @@
       border-radius: 4px;
       font-size: 12px;
     }
+
     .participant-controls {
       position: absolute;
       bottom: 8px;
@@ -58,13 +65,23 @@
       display: flex;
       gap: 4px;
     }
+
     .chat-message {
       animation: fadeIn 0.3s ease-in-out;
     }
+
     @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(10px); }
-      to { opacity: 1; transform: translateY(0); }
+      from {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
     }
+
     .screen-share-overlay {
       position: fixed;
       top: 0;
@@ -78,6 +95,7 @@
       align-items: center;
       justify-content: center;
     }
+
     .screen-share-video {
       width: 90%;
       height: 80%;
@@ -85,73 +103,113 @@
       border-radius: 8px;
       overflow: hidden;
     }
+
     .screen-share-video video {
       width: 100%;
       height: 100%;
       object-fit: contain;
     }
+
     .reaction-animation {
       position: absolute;
       animation: floatUp 2s ease-in-out forwards;
       font-size: 24px;
       z-index: 10;
     }
+
     @keyframes floatUp {
-      0% { transform: translateY(0) scale(1); opacity: 1; }
-      100% { transform: translateY(-100px) scale(0.5); opacity: 0; }
+      0% {
+        transform: translateY(0) scale(1);
+        opacity: 1;
+      }
+
+      100% {
+        transform: translateY(-100px) scale(0.5);
+        opacity: 0;
+      }
     }
+
     .blur-background {
       filter: blur(5px);
     }
+
     .sidebar {
       transition: transform 0.3s ease-in-out;
     }
+
     .sidebar-hidden {
       transform: translateX(100%);
     }
+
     .home-screen {
       background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 100%);
       min-height: 100vh;
       overflow-y: auto;
     }
+
     .meeting-card {
       transition: all 0.3s ease;
     }
+
     .meeting-card:hover {
       transform: translateY(-5px);
       box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
     }
+
     .floating-button {
       box-shadow: 0 4px 14px rgba(0, 0, 0, 0.3);
       transition: all 0.3s ease;
     }
+
     .floating-button:hover {
       transform: scale(1.05);
       box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
     }
+
     .invite-friends-modal {
       animation: modalFadeIn 0.3s ease-out;
     }
+
     @keyframes modalFadeIn {
-      from { opacity: 0; transform: translateY(20px); }
-      to { opacity: 1; transform: translateY(0); }
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
     }
+
     .background-pattern {
-      background-image: radial-gradient(circle, rgba(255,255,255,0.1) 1px, transparent 1px);
+      background-image: radial-gradient(circle, rgba(255, 255, 255, 0.1) 1px, transparent 1px);
       background-size: 20px 20px;
     }
+
     .pulse-animation {
       animation: pulse 2s infinite;
     }
+
     @keyframes pulse {
-      0% { transform: scale(1); }
-      50% { transform: scale(1.05); }
-      100% { transform: scale(1); }
+      0% {
+        transform: scale(1);
+      }
+
+      50% {
+        transform: scale(1.05);
+      }
+
+      100% {
+        transform: scale(1);
+      }
     }
+
     .typing-indicator {
       display: flex;
       align-items: center;
     }
+
     .typing-dot {
       width: 6px;
       height: 6px;
@@ -160,19 +218,32 @@
       margin: 0 2px;
       animation: typingAnimation 1.4s infinite ease-in-out;
     }
+
     .typing-dot:nth-child(1) {
       animation-delay: 0s;
     }
+
     .typing-dot:nth-child(2) {
       animation-delay: 0.2s;
     }
+
     .typing-dot:nth-child(3) {
       animation-delay: 0.4s;
     }
+
     @keyframes typingAnimation {
-      0%, 60%, 100% { transform: translateY(0); }
-      30% { transform: translateY(-5px); }
+
+      0%,
+      60%,
+      100% {
+        transform: translateY(0);
+      }
+
+      30% {
+        transform: translateY(-5px);
+      }
     }
+
     .logo-text {
       font-family: 'Arial', sans-serif;
       font-weight: 800;
@@ -182,11 +253,13 @@
       background-clip: text;
       color: transparent;
     }
+
     .glow-text {
       text-shadow: 0 0 10px rgba(99, 102, 241, 0.5);
     }
   </style>
 </head>
+
 <body class="bg-gray-900 text-white">
   <!-- Home Screen -->
   <div class="home-screen background-pattern flex flex-col items-center justify-center py-8" id="home-screen">
@@ -195,7 +268,8 @@
         <i class="fas fa-video text-blue-300 text-5xl mr-4"></i>
         <h1 class="text-5xl font-bold logo-text glow-text">ERIX STUDIOS</h1>
       </div>
-      <p class="text-xl text-blue-100 max-w-lg mx-auto mb-8">Premium video conferencing for creative teams. Connect, collaborate, and create together.</p>
+      <p class="text-xl text-blue-100 max-w-lg mx-auto mb-8">Premium video conferencing for creative teams. Connect,
+        collaborate, and create together.</p>
     </div>
 
     <div class="w-full max-w-4xl px-4">
@@ -208,7 +282,9 @@
             <h3 class="text-lg font-semibold">New Meeting</h3>
           </div>
           <p class="text-gray-300 mb-4">Start an instant meeting with video and audio</p>
-          <button class="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-lg flex items-center justify-center" id="new-meeting-btn">
+          <button
+            class="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-lg flex items-center justify-center"
+            id="new-meeting-btn">
             <i class="fas fa-plus mr-2"></i> New Meeting
           </button>
         </div>
@@ -221,7 +297,9 @@
             <h3 class="text-lg font-semibold">Join Meeting</h3>
           </div>
           <p class="text-gray-300 mb-4">Enter a meeting ID or link to join a session</p>
-          <button class="w-full bg-gray-700 hover:bg-gray-600 text-white py-2 px-4 rounded-lg flex items-center justify-center" id="join-meeting-home-btn">
+          <button
+            class="w-full bg-gray-700 hover:bg-gray-600 text-white py-2 px-4 rounded-lg flex items-center justify-center"
+            id="join-meeting-home-btn">
             <i class="fas fa-sign-in-alt mr-2"></i> Join
           </button>
         </div>
@@ -234,7 +312,9 @@
             <h3 class="text-lg font-semibold">Schedule</h3>
           </div>
           <p class="text-gray-300 mb-4">Plan a meeting for later with calendar integration</p>
-          <button class="w-full bg-gray-700 hover:bg-gray-600 text-white py-2 px-4 rounded-lg flex items-center justify-center" id="schedule-meeting-btn">
+          <button
+            class="w-full bg-gray-700 hover:bg-gray-600 text-white py-2 px-4 rounded-lg flex items-center justify-center"
+            id="schedule-meeting-btn">
             <i class="fas fa-clock mr-2"></i> Schedule
           </button>
         </div>
@@ -276,7 +356,9 @@
     </div>
 
     <div class="fixed bottom-8 right-8">
-      <button class="floating-button w-14 h-14 rounded-full bg-blue-600 hover:bg-blue-700 text-white flex items-center justify-center text-xl" id="invite-friends-btn">
+      <button
+        class="floating-button w-14 h-14 rounded-full bg-blue-600 hover:bg-blue-700 text-white flex items-center justify-center text-xl"
+        id="invite-friends-btn">
         <i class="fas fa-user-plus"></i>
       </button>
     </div>
@@ -288,7 +370,8 @@
       <h2 class="text-xl font-bold mb-4">Start New Meeting</h2>
       <div class="mb-4">
         <label class="block text-sm font-medium mb-1">Your Name</label>
-        <input type="text" class="w-full bg-gray-700 border border-gray-600 rounded px-3 py-2" id="new-meeting-name" placeholder="Enter your name">
+        <input type="text" class="w-full bg-gray-700 border border-gray-600 rounded px-3 py-2" id="new-meeting-name"
+          placeholder="Enter your name">
       </div>
       <div class="flex justify-end space-x-2">
         <button class="px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded" id="cancel-new-meeting">
@@ -302,7 +385,8 @@
   </div>
 
   <!-- Invite Friends Modal -->
-  <div class="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 hidden" id="invite-friends-modal">
+  <div class="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 hidden"
+    id="invite-friends-modal">
     <div class="bg-gray-800 rounded-xl p-6 w-full max-w-md invite-friends-modal">
       <div class="flex justify-between items-center mb-4">
         <h2 class="text-xl font-bold">Invite Friends</h2>
@@ -314,7 +398,8 @@
       <div class="mb-4">
         <label class="block text-sm font-medium mb-2">Meeting Link</label>
         <div class="flex">
-          <input type="text" class="flex-1 bg-gray-700 border border-gray-600 rounded-l px-3 py-2 text-sm" readonly id="meeting-link">
+          <input type="text" class="flex-1 bg-gray-700 border border-gray-600 rounded-l px-3 py-2 text-sm" readonly
+            id="meeting-link">
           <button class="bg-blue-600 hover:bg-blue-700 px-3 py-2 rounded-r text-sm" id="copy-meeting-link">
             <i class="fas fa-copy"></i>
           </button>
@@ -324,7 +409,8 @@
       <div class="mb-4">
         <label class="block text-sm font-medium mb-2">Invite via Email</label>
         <div class="flex space-x-2">
-          <input type="email" placeholder="Enter email addresses" class="flex-1 bg-gray-700 border border-gray-600 rounded px-3 py-2 text-sm" id="invite-emails" multiple>
+          <input type="email" placeholder="Enter email addresses"
+            class="flex-1 bg-gray-700 border border-gray-600 rounded px-3 py-2 text-sm" id="invite-emails" multiple>
           <button class="bg-blue-600 hover:bg-blue-700 px-3 py-2 rounded text-sm" id="send-invites">
             <i class="fas fa-paper-plane"></i>
           </button>
@@ -335,19 +421,23 @@
       <div>
         <h3 class="text-sm font-medium mb-2">Quick Share</h3>
         <div class="grid grid-cols-4 gap-2">
-          <button class="p-2 bg-gray-700 hover:bg-gray-600 rounded flex flex-col items-center justify-center text-xs" id="share-whatsapp">
+          <button class="p-2 bg-gray-700 hover:bg-gray-600 rounded flex flex-col items-center justify-center text-xs"
+            id="share-whatsapp">
             <i class="fab fa-whatsapp text-green-400 text-lg mb-1"></i>
             WhatsApp
           </button>
-          <button class="p-2 bg-gray-700 hover:bg-gray-600 rounded flex flex-col items-center justify-center text-xs" id="share-email">
+          <button class="p-2 bg-gray-700 hover:bg-gray-600 rounded flex flex-col items-center justify-center text-xs"
+            id="share-email">
             <i class="fas fa-envelope text-blue-400 text-lg mb-1"></i>
             Email
           </button>
-          <button class="p-2 bg-gray-700 hover:bg-gray-600 rounded flex flex-col items-center justify-center text-xs" id="share-sms">
+          <button class="p-2 bg-gray-700 hover:bg-gray-600 rounded flex flex-col items-center justify-center text-xs"
+            id="share-sms">
             <i class="fas fa-sms text-yellow-400 text-lg mb-1"></i>
             SMS
           </button>
-          <button class="p-2 bg-gray-700 hover:bg-gray-600 rounded flex flex-col items-center justify-center text-xs" id="share-copy">
+          <button class="p-2 bg-gray-700 hover:bg-gray-600 rounded flex flex-col items-center justify-center text-xs"
+            id="share-copy">
             <i class="fas fa-copy text-gray-400 text-lg mb-1"></i>
             Copy
           </button>
@@ -357,7 +447,8 @@
   </div>
 
   <!-- Join Meeting Modal -->
-  <div class="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 hidden" id="join-meeting-modal">
+  <div class="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 hidden"
+    id="join-meeting-modal">
     <div class="bg-gray-800 rounded-lg p-6 w-full max-w-md">
       <h2 class="text-xl font-bold mb-4">Join Meeting</h2>
       <div class="mb-4">
@@ -366,7 +457,8 @@
       </div>
       <div class="mb-4">
         <label class="block text-sm font-medium mb-1">Your Name</label>
-        <input type="text" class="w-full bg-gray-700 border border-gray-600 rounded px-3 py-2" id="participant-name" placeholder="Enter your name">
+        <input type="text" class="w-full bg-gray-700 border border-gray-600 rounded px-3 py-2" id="participant-name"
+          placeholder="Enter your name">
       </div>
       <div class="mb-4">
         <label class="flex items-center space-x-2">
@@ -380,18 +472,20 @@
         </button>
         <button class="px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded" id="confirm-join">
           Join
-        </<|control88|>>
+        </button>
       </div>
     </div>
   </div>
 
   <!-- Schedule Meeting Modal -->
-  <div class="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 hidden" id="schedule-meeting-modal">
+  <div class="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 hidden"
+    id="schedule-meeting-modal">
     <div class="bg-gray-800 rounded-lg p-6 w-full max-w-md">
       <h2 class="text-xl font-bold mb-4">Schedule Meeting</h2>
       <div class="mb-4">
         <label class="block text-sm font-medium mb-1">Meeting Title</label>
-        <input type="text" class="w-full bg-gray-700 border border-gray-600 rounded px-3 py-2" id="schedule-title" placeholder="Creative Review">
+        <input type="text" class="w-full bg-gray-700 border border-gray-600 rounded px-3 py-2" id="schedule-title"
+          placeholder="Creative Review">
       </div>
       <div class="grid grid-cols-2 gap-4 mb-4">
         <div>
@@ -414,7 +508,8 @@
       </div>
       <div class="mb-4">
         <label class="block text-sm font-medium mb-1">Invitees</label>
-        <input type="text" class="w-full bg-gray-700 border border-gray-600 rounded px-3 py-2" id="schedule-invitees" placeholder="Enter email addresses">
+        <input type="text" class="w-full bg-gray-700 border border-gray-600 rounded px-3 py-2" id="schedule-invitees"
+          placeholder="Enter email addresses">
       </div>
       <div class="flex justify-end space-x-2">
         <button class="px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded" id="cancel-schedule">
@@ -428,17 +523,20 @@
   </div>
 
   <!-- Notification Toast -->
-  <div class="fixed bottom-4 right-4 bg-gray-800 text-white px-4 py-2 rounded-lg shadow-lg text-sm hidden" id="notification-toast">
+  <div class="fixed bottom-4 right-4 bg-gray-800 text-white px-4 py-2 rounded-lg shadow-lg text-sm hidden"
+    id="notification-toast">
     <div class="flex items-center">
       <i class="fas fa-check-circle text-green-400 mr-2"></i>
       <span id="notification-message">Meeting link copied to clipboard</span>
     </div>
   </div>
 
-  <script src="/socket.io/socket.io.js"></script>
+  <script src="/meet/socket.io/socket.io.js"></script>
   <script>
-    const socket = io();
-    const homeScreen = document.getElementById('home-screen');
+    const socket = io({
+      path: '/meet/socket.io'
+    }); 
+    
     const newMeetingBtn = document.getElementById('new-meeting-btn');
     const joinMeetingHomeBtn = document.getElementById('join-meeting-home-btn');
     const scheduleMeetingBtn = document.getElementById('schedule-meeting-btn');
@@ -468,6 +566,17 @@
     const notificationToast = document.getElementById('notification-toast');
     const notificationMessage = document.getElementById('notification-message');
     const newMeetingNameInput = document.getElementById('new-meeting-name');
+
+    // Add Socket.IO connection debugging
+    socket.on('connect', () => {
+      console.log('Connected to Socket.IO server:', socket.id);
+    });
+    socket.on('connect_error', (error) => {
+      console.error('Socket.IO connection error:', error);
+    });
+    socket.on('error', (error) => {
+      console.error('Socket.IO error:', error);
+    });
 
     // Input Sanitization
     function sanitizeInput(input) {
@@ -546,7 +655,7 @@
       sessionStorage.setItem('userName', sanitizedName);
       const room = generateMeetingId();
       newMeetingModal.classList.add('hidden');
-      window.location.href = `/meeting.html?room=${encodeURIComponent(room)}`;
+      window.location.href = `./meeting.html?room=${encodeURIComponent(room)}`;
     }
 
     // Show join meeting modal
@@ -579,7 +688,7 @@
           showNotification('Room does not exist.');
           return;
         }
-        window.location.href = `/meeting.html?room=${encodeURIComponent(room)}`;
+        window.location.href = `./meeting.html?room=${encodeURIComponent(room)}`;
       });
       joinMeetingModal.classList.add('hidden');
     }
@@ -598,7 +707,7 @@
       const time = document.getElementById('schedule-time').value;
       const duration = document.getElementById('schedule-duration').value;
       const invitees = document.getElementById('schedule-invitees').value.trim();
-      
+
       if (!title || !date || !time) {
         showNotification('Please fill in all required fields.');
         return;
@@ -607,7 +716,7 @@
       const room = generateMeetingId();
       const sanitizedTitle = sanitizeInput(title);
       const sanitizedInvitees = sanitizeInput(invitees);
-      
+
       socket.emit('schedule-meeting', {
         room,
         title: sanitizedTitle,
@@ -705,4 +814,5 @@
     document.addEventListener('DOMContentLoaded', init);
   </script>
 </body>
+
 </html>
