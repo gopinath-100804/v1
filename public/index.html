@@ -532,11 +532,18 @@
   </div>
 
   <script src="/socket.io/socket.io.js"></script>
-  <script src="https://cdn.socket.io/4.8.1/socket.io.min.js"></script>
 
   <script src="/meet/socket.io/socket.io.js"></script>
+
   <script>
-    const socket = io(); // Connect to the same origin (proxied by Apache)
+
+    const path = window.location.pathname.startsWith('/meet/')
+      ? '/meet/socket.io'
+      : '/socket.io';
+
+    const socket = io({
+      path: path,
+    });
 
     const newMeetingBtn = document.getElementById('new-meeting-btn');
     const joinMeetingHomeBtn = document.getElementById('join-meeting-home-btn');
