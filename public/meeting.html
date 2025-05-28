@@ -1006,13 +1006,15 @@
 
 
   <script src="/meet/socket.io/socket.io.js"></script>
+  <script src="/socket.io/socket.io.js"></script>
+
   <script>
 
     // Initialize Socket.IO with reconnection handling
     const socket = io({
       reconnection: true,
       reconnectionAttempts: 5,
-      path: '/meet/socket.io',
+      path: '/socket.io' & '/meer/socket.io',
       reconnectionDelay: 1000,
       reconnectionDelayMax: 5000,
       randomizationFactor: 0.5,

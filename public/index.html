@@ -531,12 +531,14 @@
     </div>
   </div>
 
+  <script src="/socket.io/socket.io.js"></script>
+
   <script src="/meet/socket.io/socket.io.js"></script>
   <script>
     const socket = io({
-      path: '/meet/socket.io'
-    }); 
-    
+      path: '/meet/socket.io',
+    });
+
     const newMeetingBtn = document.getElementById('new-meeting-btn');
     const joinMeetingHomeBtn = document.getElementById('join-meeting-home-btn');
     const scheduleMeetingBtn = document.getElementById('schedule-meeting-btn');
