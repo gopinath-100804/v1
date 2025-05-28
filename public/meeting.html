@@ -1296,7 +1296,7 @@
 
     // Update Meeting Link
     function updateMeetingLink() {
-      const link = `${window.location.origin}/meeting.html?room=${encodeURIComponent(room)}`;
+      const link = `${window.location}/meeting.html?room=${encodeURIComponent(room)}`;
       elements.meetingLink.value = link;
     }
 
@@ -2583,7 +2583,7 @@
     // Copy Meeting Link
     async function copyMeetingLinkToClipboard(event) {
       const isCopyMeetingId = event.target.closest("#copy-meeting-id");
-      const link = `${window.location.origin}/meeting.html?room=${encodeURIComponent(room)}`;
+      const link = `${window.location}/meeting.html?room=${encodeURIComponent(room)}`;
       const textToCopy = isCopyMeetingId ? room : link;
 
       try {
@@ -2617,7 +2617,7 @@
     // Share via WhatsApp
     function shareViaWhatsapp() {
       const link = encodeURIComponent(
-        `${window.location.origin}/meeting.html?room=${encodeURIComponent(room)}`
+        `${window.location}/meeting.html?room=${encodeURIComponent(room)}`
       );
       window.open(`https://wa.me/?text=Join my meeting: ${link}`, "_blank");
       showNotification("Opening WhatsApp to share meeting link");
@@ -2625,7 +2625,7 @@
 
     // Share via Email
     function shareViaEmail() {
-      const link = `${window.location.origin}/meeting.html?room=${encodeURIComponent(room)}`;
+      const link = `${window.location}/meeting.html?room=${encodeURIComponent(room)}`;
       window.open(
         `mailto:?subject=Join My Meeting&body=Join my meeting: ${link}`
       );
@@ -2634,7 +2634,7 @@
 
     // Share via SMS
     function shareViaSms() {
-      const link = `${window.location.origin}/meeting.html?room=${encodeURIComponent(room)}`;
+      const link = `${window.location}/meeting.html?room=${encodeURIComponent(room)}`;
       window.open(`sms:?body=Join my meeting: ${link}`);
       showNotification("Opening SMS to share meeting link");
     }
