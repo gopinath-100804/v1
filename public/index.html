@@ -231,13 +231,9 @@
     }
 
     @keyframes typingAnimation {
-
-      0%,
-      60%,
-      100% {
+      0%, 60%, 100% {
         transform: translateY(0);
       }
-
       30% {
         transform: translateY(-5px);
       }
@@ -255,6 +251,38 @@
 
     .glow-text {
       text-shadow: 0 0 10px rgba(99, 102, 241, 0.5);
+    }
+
+    /* Disable cursor for readonly username inputs */
+    .disabled-input {
+      cursor: not-allowed;
+      pointer-events: none;
+      background-color: #4b5563;
+      color: #9ca3af;
+    }
+
+    /* Loading spinner animation */
+    .loader {
+      border: 3px solid #ffffff33;
+      border-top: 3px solid #ffffff;
+      border-radius: 50%;
+      width: 20px;
+      height: 20px;
+      animation: spin 1s linear infinite;
+      display: inline-block;
+      margin-left: 8px;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    /* Ensure button content aligns properly during loading */
+    .button-loading {
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
   </style>
 </head>
@@ -371,19 +399,20 @@
       <h2 class="text-xl font-bold mb-4">Start New Meeting</h2>
       <div class="mb-4">
         <label class="block text-sm font-medium mb-1">Your Name</label>
-        <input type="text" class="w-full bg-gray-700 border border-gray-600 rounded px-3 py-2" id="new-meeting-name"
-          readonly>
+        <input type="text" class="w-full bg-gray-700 border border-gray-600 rounded px-3 py-2 disabled-input" id="new-meeting-name" readonly aria-disabled="true">
       </div>
       <div class="flex justify-end space-x-2">
         <button class="px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded" id="cancel-new-meeting">Cancel</button>
-        <button class="px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded" id="confirm-new-meeting">Start Meeting</button>
+        <button class="px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded button-loading" id="confirm-new-meeting">
+          <span class="button-text">Start Meeting</span>
+          <span class="loader hidden"></span>
+        </button>
       </div>
     </div>
   </div>
 
   <!-- Invite Friends Modal -->
-  <div class="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 hidden"
-    id="invite-friends-modal">
+  <div class="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 hidden" id="invite-friends-modal">
     <div class="bg-gray-800 rounded-xl p-6 w-full max-w-md invite-friends-modal">
       <div class="flex justify-between items-center mb-4">
         <h2 class="text-xl font-bold">Invite Friends</h2>
@@ -394,8 +423,7 @@
       <div class="mb-4">
         <label class="block text-sm font-medium mb-2">Meeting Link</label>
         <div class="flex">
-          <input type="text" class="flex-1 bg-gray-700 border border-gray-600 rounded-l px-3 py-2 text-sm" readonly
-            id="meeting-link">
+          <input type="text" class="flex-1 bg-gray-700 border border-gray-600 rounded-l px-3 py-2 text-sm" readonly id="meeting-link">
           <button class="bg-blue-600 hover:bg-blue-700 px-3 py-2 rounded-r text-sm" id="copy-meeting-link">
             <i class="fas fa-copy"></i>
           </button>
@@ -415,20 +443,16 @@
       <div>
         <h3 class="text-sm font-medium mb-2">Quick Share</h3>
         <div class="grid grid-cols-4 gap-2">
-          <button class="p-2 bg-gray-700 hover:bg-gray-600 rounded flex flex-col items-center justify-center text-xs"
-            id="share-whatsapp">
+          <button class="p-2 bg-gray-700 hover:bg-gray-600 rounded flex flex-col items-center justify-center text-xs" id="share-whatsapp">
             <i class="fab fa-whatsapp text-green-400 text-lg mb-1"></i> WhatsApp
           </button>
-          <button class="p-2 bg-gray-700 hover:bg-gray-600 rounded flex flex-col items-center justify-center text-xs"
-            id="share-email">
+          <button class="p-2 bg-gray-700 hover:bg-gray-600 rounded flex flex-col items-center justify-center text-xs" id="share-email">
             <i class="fas fa-envelope text-blue-400 text-lg mb-1"></i> Email
           </button>
-          <button class="p-2 bg-gray-700 hover:bg-gray-600 rounded flex flex-col items-center justify-center text-xs"
-            id="share-sms">
+          <button class="p-2 bg-gray-700 hover:bg-gray-600 rounded flex flex-col items-center justify-center text-xs" id="share-sms">
             <i class="fas fa-sms text-yellow-400 text-lg mb-1"></i> SMS
           </button>
-          <button class="p-2 bg-gray-700 hover:bg-gray-600 rounded flex flex-col items-center justify-center text-xs"
-            id="share-copy">
+          <button class="p-2 bg-gray-700 hover:bg-gray-600 rounded flex flex-col items-center justify-center text-xs" id="share-copy">
             <i class="fas fa-copy text-gray-400 text-lg mb-1"></i> Copy
           </button>
         </div>
@@ -437,8 +461,7 @@
   </div>
 
   <!-- Join Meeting Modal -->
-  <div class="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 hidden"
-    id="join-meeting-modal">
+  <div class="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 hidden" id="join-meeting-modal">
     <div class="bg-gray-800 rounded-lg p-6 w-full max-w-md">
       <h2 class="text-xl font-bold mb-4">Join Meeting</h2>
       <div class="mb-4">
@@ -447,8 +470,7 @@
       </div>
       <div class="mb-4">
         <label class="block text-sm font-medium mb-1">Your Name</label>
-        <input type="text" class="w-full bg-gray-700 border border-gray-600 rounded px-3 py-2" id="participant-name"
-          readonly>
+        <input type="text" class="w-full bg-gray-700 border border-gray-600 rounded px-3 py-2 disabled-input" id="participant-name" readonly aria-disabled="true">
       </div>
       <div class="mb-4">
         <label class="flex items-center space-x-2">
@@ -458,20 +480,21 @@
       </div>
       <div class="flex justify-end space-x-2">
         <button class="px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded" id="cancel-join">Cancel</button>
-        <button class="px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded" id="confirm-join">Join</button>
+        <button class="px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded button-loading" id="confirm-join">
+          <span class="button-text">Join</span>
+          <span class="loader hidden"></span>
+        </button>
       </div>
     </div>
   </div>
 
   <!-- Schedule Meeting Modal -->
-  <div class="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 hidden"
-    id="schedule-meeting-modal">
+  <div class="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 hidden" id="schedule-meeting-modal">
     <div class="bg-gray-800 rounded-lg p-6 w-full max-w-md">
       <h2 class="text-xl font-bold mb-4">Schedule Meeting</h2>
       <div class="mb-4">
         <label class="block text-sm font-medium mb-1">Meeting Title</label>
-        <input type="text" class="w-full bg-gray-700 border border-gray-600 rounded px-3 py-2" id="schedule-title"
-          placeholder="Creative Review">
+        <input type="text" class="w-full bg-gray-700 border border-gray-600 rounded px-3 py-2" id="schedule-title" placeholder="Creative Review">
       </div>
       <div class="grid grid-cols-2 gap-4 mb-4">
         <div>
@@ -494,8 +517,7 @@
       </div>
       <div class="mb-4">
         <label class="block text-sm font-medium mb-1">Invitees</label>
-        <input type="text" class="w-full bg-gray-700 border border-gray-600 rounded px-3 py-2" id="schedule-invitees"
-          placeholder="Enter email addresses">
+        <input type="text" class="w-full bg-gray-700 border border-gray-600 rounded px-3 py-2" id="schedule-invitees" placeholder="Enter email addresses">
       </div>
       <div class="flex justify-end space-x-2">
         <button class="px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded" id="cancel-schedule">Cancel</button>
@@ -505,8 +527,7 @@
   </div>
 
   <!-- Notification Toast -->
-  <div class="fixed bottom-4 right-4 bg-gray-800 text-white px-4 py-2 rounded-lg shadow-lg text-sm hidden"
-    id="notification-toast">
+  <div class="fixed bottom-4 right-4 bg-gray-800 text-white px-4 py-2 rounded-lg shadow-lg text-sm hidden" id="notification-toast">
     <div class="flex items-center">
       <i class="fas fa-check-circle text-green-400 mr-2"></i>
       <span id="notification-message">Meeting link copied to clipboard</span>
@@ -517,15 +538,8 @@
   <script src="/meet/socket.io/socket.io.js"></script>
 
   <script>
-    const path = window.location.pathname.startsWith('/meet/')
-      ? '/meet/socket.io'
-      : '/socket.io';
-
-    const socket = io({
-      path: path,
-      withCredentials: true
-
-    });
+    const path = window.location.pathname.startsWith('/meet/') ? '/meet/socket.io' : '/socket.io';
+    const socket = io({ path: path, withCredentials: true });
 
     const newMeetingBtn = document.getElementById('new-meeting-btn');
     const joinMeetingHomeBtn = document.getElementById('join-meeting-home-btn');
@@ -580,13 +594,12 @@
     // Session variables
     let sessionUsername = null;
     let sessionId = null;
+    let preGeneratedRoomId = null;
 
     // Fetch session data
     async function fetchSession() {
       try {
-        const response = await fetch('https://localhost/get-session.php', {
-          credentials: 'include'
-        });
+        const response = await fetch('https://localhost/get-session.php', { credentials: 'include' });
         const data = await response.json();
         sessionUsername = data.username || null;
         if (!sessionUsername) {
@@ -610,6 +623,16 @@
       const cookies = document.cookie.split(';').map(c => c.trim());
       const sessionCookie = cookies.find(c => c.startsWith('PHPSESSID='));
       return sessionCookie ? sessionCookie.split('=')[1] : null;
+    }
+
+    // Generate meeting ID
+    function generateMeetingId() {
+      const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+      let result = '';
+      for (let i = 0; i < 9; i++) {
+        result += chars.charAt(Math.floor(Math.random() * chars.length));
+      }
+      return `${result.slice(0, 3)}-${result.slice(3, 6)}-${result.slice(6)}`;
     }
 
     // Initialize
@@ -645,17 +668,6 @@
       });
     }
 
-    // Generate meeting ID
-    function generateMeetingId() {
-      const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-      let result = '';
-      for (let i = 0; i < 9; i++) {
-        result += chars.charAt(Math.floor(Math.random() * chars.length));
-      }
-      return `${result.slice(0, 3)}-${result.slice(3, 6)}-${result.slice(6)}`;
-    }
-
-    
     // Update meeting link
     function updateMeetingLink(room = '') {
       const link = room ? `${window.location.origin}/meeting.html?room=${encodeURIComponent(room)}` : '';
@@ -669,6 +681,7 @@
         window.location.href = '../contents/admin/login.php';
         return;
       }
+      preGeneratedRoomId = generateMeetingId(); // Pre-generate room ID
       newMeetingModal.classList.remove('hidden');
       newMeetingNameInput.value = sessionUsername;
     }
@@ -680,9 +693,32 @@
         window.location.href = '../contents/admin/login.php';
         return;
       }
-      const room = generateMeetingId();
+      const room = preGeneratedRoomId || generateMeetingId();
+      const button = document.getElementById('confirm-new-meeting');
+      const buttonText = button.querySelector('.button-text');
+      const loader = button.querySelector('.loader');
+
+      // Show loading state
+      button.disabled = true;
+      buttonText.textContent = 'Starting...';
+      loader.classList.remove('hidden');
+
       sessionStorage.setItem('sessionUsername', sessionUsername);
+
+      // Set a timeout for the socket event
+      const timeoutId = setTimeout(() => {
+        button.disabled = false;
+        buttonText.textContent = 'Start Meeting';
+        loader.classList.add('hidden');
+        showNotification('Server is taking too long to respond. Please try again.');
+      }, 10000); // 10 seconds timeout
+
       socket.emit('join-room', { room, name: sessionUsername, sessionId }, (response) => {
+        clearTimeout(timeoutId); // Clear timeout on response
+        button.disabled = false;
+        buttonText.textContent = 'Start Meeting';
+        loader.classList.add('hidden');
+
         if (response.error) {
           showNotification(response.error);
           window.location.href = '../contents/admin/login.php';
@@ -717,22 +753,48 @@
         showNotification('Please enter a meeting ID.');
         return;
       }
+      const button = document.getElementById('confirm-join');
+      const buttonText = button.querySelector('.button-text');
+      const loader = button.querySelector('.loader');
+
+      // Show loading state
+      button.disabled = true;
+      buttonText.textContent = 'Joining...';
+      loader.classList.remove('hidden');
+
+      // Set a timeout for the socket event
+      const timeoutId = setTimeout(() => {
+        button.disabled = false;
+        buttonText.textContent = 'Join';
+        loader.classList.add('hidden');
+        showNotification('Server is taking too long to respond. Please try again.');
+      }, 10000); // 10 seconds timeout
+
       socket.emit('check-room', room, (exists) => {
         if (!exists && !confirm('Room does not exist. Create a new room?')) {
+          clearTimeout(timeoutId);
+          button.disabled = false;
+          buttonText.textContent = 'Join';
+          loader.classList.add('hidden');
           showNotification('Room does not exist.');
           return;
         }
         socket.emit('join-room', { room, name: sessionUsername, sessionId }, (response) => {
+          clearTimeout(timeoutId); // Clear timeout on response
+          button.disabled = false;
+          buttonText.textContent = 'Join';
+          loader.classList.add('hidden');
+
           if (response.error) {
             showNotification(response.error);
             window.location.href = '../contents/admin/login.php';
             return;
           }
           sessionStorage.setItem('sessionUsername', sessionUsername);
+          joinMeetingModal.classList.add('hidden'); // Close modal only after success
           window.location.href = `./meeting.html?room=${encodeURIComponent(room)}`;
         });
       });
-      joinMeetingModal.classList.add('hidden');
     }
 
     // Show schedule meeting modal
