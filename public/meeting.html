@@ -1032,9 +1032,10 @@
     // Fetch session username from PHP
     async function fetchSession() {
       try {
-        const response = await fetch('https://localhost/get-session.php', {
+        const response = await fetch(`${window.location.origin}/get-session.php`, {
           credentials: 'include'
         });
+
         const data = await response.json();
         const sessionUsername = data.username || null;
         if (!sessionUsername) {
@@ -2708,20 +2709,20 @@
 
     // Update Participant List
     function updateParticipantList() {
-  // Clear the participant list to prevent duplicates
-  elements.participantsList.innerHTML = "";
+      // Clear the participant list to prevent duplicates
+      elements.participantsList.innerHTML = "";
 
-  // Add local participant
-  addParticipant("local", userName, state.isHost, state.isHandRaised, state.screenSharingParticipant === socket.id);
+      // Add local participant
+      addParticipant("local", userName, state.isHost, state.isHandRaised, state.screenSharingParticipant === socket.id);
 
-  // Add remote participants
-  state.peers.forEach((_, id) => {
-    const name = state.participantNames.get(id) || "Anonymous";
-    const handRaised = state.peerStreams.get(id)?.handRaised || false;
-    const isScreenSharing = state.screenSharingParticipant === id;
-    addParticipant(id, name, false, handRaised, isScreenSharing);
-  });
-}
+      // Add remote participants
+      state.peers.forEach((_, id) => {
+        const name = state.participantNames.get(id) || "Anonymous";
+        const handRaised = state.peerStreams.get(id)?.handRaised || false;
+        const isScreenSharing = state.screenSharingParticipant === id;
+        addParticipant(id, name, false, handRaised, isScreenSharing);
+      });
+    }
 
     // Leave Call
     function leaveCall() {
