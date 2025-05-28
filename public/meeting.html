@@ -1012,15 +1012,9 @@
   <script>
 
     // Initialize Socket.IO with reconnection handling
-    const socket = io({
-      reconnection: true,
-      reconnectionAttempts: 5,
-       reconnectionDelay: 1000,
-      reconnectionDelayMax: 5000,
-      randomizationFactor: 0.5
-    });
+    const socket = io();
 
-
+    
     // URL Parameters
     const urlParams = new URLSearchParams(window.location.search);
     const room = urlParams.get("room")?.trim();
