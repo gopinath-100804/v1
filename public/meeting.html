@@ -1015,13 +1015,12 @@
     const socket = io({
       reconnection: true,
       reconnectionAttempts: 5,
-      path: '/socket.io',
-      reconnectionDelay: 1000,
+       reconnectionDelay: 1000,
       reconnectionDelayMax: 5000,
       randomizationFactor: 0.5
     });
 
-    
+
     // URL Parameters
     const urlParams = new URLSearchParams(window.location.search);
     const room = urlParams.get("room")?.trim();
