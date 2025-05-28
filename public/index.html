@@ -536,9 +536,7 @@
 
   <script src="/meet/socket.io/socket.io.js"></script>
   <script>
-    const socket = io({
-      path: '/meet/socket.io',
-    });
+    const socket = io(); // Connect to the same origin (proxied by Apache)
 
     const newMeetingBtn = document.getElementById('new-meeting-btn');
     const joinMeetingHomeBtn = document.getElementById('join-meeting-home-btn');

@@ -9,9 +9,9 @@ const app = express();
 const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
-    origin: "*", // Adjust for production
-    methods: ["GET", "POST"],
-  },
+    origin: "*",
+    methods: ["GET", "POST"]
+  }
 });
 
 // Serve static files from 'public' directory

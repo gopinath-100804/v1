@@ -1012,9 +1012,12 @@
   <script>
 
     // Initialize Socket.IO with reconnection handling
-    const socket = io();
+    const socket = io(); // Connect to the same origin (proxied by Apache)
+    socket.on("connect_error", (err) => {
+      console.error("Socket connection error:", err);
+      showNotification("Connection error. Please try again later.");
+    });
 
-    
     // URL Parameters
     const urlParams = new URLSearchParams(window.location.search);
     const room = urlParams.get("room")?.trim();
