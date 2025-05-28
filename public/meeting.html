@@ -1008,15 +1008,21 @@
   <script src="/meet/socket.io/socket.io.js"></script>
   <script src="/socket.io/socket.io.js"></script>
 
-  <script src="https://cdn.socket.io/4.8.1/socket.io.min.js"></script>
   <script>
 
-    // Initialize Socket.IO with reconnection handling
-    const socket = io(); // Connect to the same origin (proxied by Apache)
-    socket.on("connect_error", (err) => {
-      console.error("Socket connection error:", err);
-      showNotification("Connection error. Please try again later.");
+    const path = window.location.pathname.startsWith('/meet/')
+      ? '/meet/socket.io'
+      : '/socket.io';
+
+    const socket = io({
+      reconnection: true,
+      reconnectionAttempts: 5,
+      path: path,
+      reconnectionDelay: 1000,
+      reconnectionDelayMax: 5000,
+      randomizationFactor: 0.5,
     });
+
 
     // URL Parameters
     const urlParams = new URLSearchParams(window.location.search);
