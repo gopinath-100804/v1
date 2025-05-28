@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -16,6 +17,7 @@
       border-radius: 8px;
       overflow: hidden;
     }
+
     .video-container video {
       position: absolute;
       top: 0;
@@ -24,6 +26,7 @@
       height: 100%;
       object-fit: cover;
     }
+
     .participant-tile {
       position: relative;
       width: 100%;
@@ -33,6 +36,7 @@
       border-radius: 8px;
       overflow: hidden;
     }
+
     .participant-tile video {
       position: absolute;
       top: 0;
@@ -41,6 +45,7 @@
       height: 100%;
       object-fit: cover;
     }
+
     .participant-name {
       position: absolute;
       bottom: 8px;
@@ -51,6 +56,7 @@
       border-radius: 4px;
       font-size: 12px;
     }
+
     .participant-controls {
       position: absolute;
       bottom: 8px;
@@ -58,13 +64,23 @@
       display: flex;
       gap: 4px;
     }
+
     .chat-message {
       animation: fadeIn 0.3s ease-in-out;
     }
+
     @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(10px); }
-      to { opacity: 1; transform: translateY(0); }
+      from {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
     }
+
     .screen-share-overlay {
       position: fixed;
       top: 0;
@@ -78,6 +94,7 @@
       align-items: center;
       justify-content: center;
     }
+
     .screen-share-video {
       width: 90%;
       height: 80%;
@@ -85,73 +102,113 @@
       border-radius: 8px;
       overflow: hidden;
     }
+
     .screen-share-video video {
       width: 100%;
       height: 100%;
       object-fit: contain;
     }
+
     .reaction-animation {
       position: absolute;
       animation: floatUp 2s ease-in-out forwards;
       font-size: 24px;
       z-index: 10;
     }
+
     @keyframes floatUp {
-      0% { transform: translateY(0) scale(1); opacity: 1; }
-      100% { transform: translateY(-100px) scale(0.5); opacity: 0; }
+      0% {
+        transform: translateY(0) scale(1);
+        opacity: 1;
+      }
+
+      100% {
+        transform: translateY(-100px) scale(0.5);
+        opacity: 0;
+      }
     }
+
     .blur-background {
       filter: blur(5px);
     }
+
     .sidebar {
       transition: transform 0.3s ease-in-out;
     }
+
     .sidebar-hidden {
       transform: translateX(100%);
     }
+
     .home-screen {
       background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 100%);
       min-height: 100vh;
       overflow-y: auto;
     }
+
     .meeting-card {
       transition: all 0.3s ease;
     }
+
     .meeting-card:hover {
       transform: translateY(-5px);
       box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
     }
+
     .floating-button {
       box-shadow: 0 4px 14px rgba(0, 0, 0, 0.3);
       transition: all 0.3s ease;
     }
+
     .floating-button:hover {
       transform: scale(1.05);
       box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
     }
+
     .invite-friends-modal {
       animation: modalFadeIn 0.3s ease-out;
     }
+
     @keyframes modalFadeIn {
-      from { opacity: 0; transform: translateY(20px); }
-      to { opacity: 1; transform: translateY(0); }
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
     }
+
     .background-pattern {
       background-image: radial-gradient(circle, rgba(255, 255, 255, 0.1) 1px, transparent 1px);
       background-size: 20px 20px;
     }
+
     .pulse-animation {
       animation: pulse 2s infinite;
     }
+
     @keyframes pulse {
-      0% { transform: scale(1); }
-      50% { transform: scale(1.05); }
-      100% { transform: scale(1); }
+      0% {
+        transform: scale(1);
+      }
+
+      50% {
+        transform: scale(1.05);
+      }
+
+      100% {
+        transform: scale(1);
+      }
     }
+
     .typing-indicator {
       display: flex;
       align-items: center;
     }
+
     .typing-dot {
       width: 6px;
       height: 6px;
@@ -160,13 +217,32 @@
       margin: 0 2px;
       animation: typingAnimation 1.4s infinite ease-in-out;
     }
-    .typing-dot:nth-child(1) { animation-delay: 0s; }
-    .typing-dot:nth-child(2) { animation-delay: 0.2s; }
-    .typing-dot:nth-child(3) { animation-delay: 0.4s; }
-    @keyframes typingAnimation {
-      0%, 60%, 100% { transform: translateY(0); }
-      30% { transform: translateY(-5px); }
+
+    .typing-dot:nth-child(1) {
+      animation-delay: 0s;
     }
+
+    .typing-dot:nth-child(2) {
+      animation-delay: 0.2s;
+    }
+
+    .typing-dot:nth-child(3) {
+      animation-delay: 0.4s;
+    }
+
+    @keyframes typingAnimation {
+
+      0%,
+      60%,
+      100% {
+        transform: translateY(0);
+      }
+
+      30% {
+        transform: translateY(-5px);
+      }
+    }
+
     .logo-text {
       font-family: 'Arial', sans-serif;
       font-weight: 800;
@@ -176,11 +252,13 @@
       background-clip: text;
       color: transparent;
     }
+
     .glow-text {
       text-shadow: 0 0 10px rgba(99, 102, 241, 0.5);
     }
   </style>
 </head>
+
 <body class="bg-gray-900 text-white">
   <!-- Home Screen -->
   <div class="home-screen background-pattern flex flex-col items-center justify-center py-8" id="home-screen">
@@ -209,7 +287,9 @@
             <h3 class="text-lg font-semibold">New Meeting</h3>
           </div>
           <p class="text-gray-300 mb-4">Start an instant meeting with video and audio</p>
-          <button class="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-lg flex items-center justify-center" id="new-meeting-btn">
+          <button
+            class="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-lg flex items-center justify-center"
+            id="new-meeting-btn">
             <i class="fas fa-plus mr-2"></i> New Meeting
           </button>
         </div>
@@ -221,7 +301,9 @@
             <h3 class="text-lg font-semibold">Join Meeting</h3>
           </div>
           <p class="text-gray-300 mb-4">Enter a meeting ID or link to join a session</p>
-          <button class="w-full bg-gray-700 hover:bg-gray-600 text-white py-2 px-4 rounded-lg flex items-center justify-center" id="join-meeting-home-btn">
+          <button
+            class="w-full bg-gray-700 hover:bg-gray-600 text-white py-2 px-4 rounded-lg flex items-center justify-center"
+            id="join-meeting-home-btn">
             <i class="fas fa-sign-in-alt mr-2"></i> Join
           </button>
         </div>
@@ -233,7 +315,9 @@
             <h3 class="text-lg font-semibold">Schedule</h3>
           </div>
           <p class="text-gray-300 mb-4">Plan a meeting for later with calendar integration</p>
-          <button class="w-full bg-gray-700 hover:bg-gray-600 text-white py-2 px-4 rounded-lg flex items-center justify-center" id="schedule-meeting-btn">
+          <button
+            class="w-full bg-gray-700 hover:bg-gray-600 text-white py-2 px-4 rounded-lg flex items-center justify-center"
+            id="schedule-meeting-btn">
             <i class="fas fa-clock mr-2"></i> Schedule
           </button>
         </div>
@@ -273,7 +357,9 @@
       </div>
     </div>
     <div class="fixed bottom-8 right-8">
-      <button class="floating-button w-14 h-14 rounded-full bg-blue-600 hover:bg-blue-700 text-white flex items-center justify-center text-xl" id="invite-friends-btn">
+      <button
+        class="floating-button w-14 h-14 rounded-full bg-blue-600 hover:bg-blue-700 text-white flex items-center justify-center text-xl"
+        id="invite-friends-btn">
         <i class="fas fa-user-plus"></i>
       </button>
     </div>
@@ -285,7 +371,8 @@
       <h2 class="text-xl font-bold mb-4">Start New Meeting</h2>
       <div class="mb-4">
         <label class="block text-sm font-medium mb-1">Your Name</label>
-        <input type="text" class="w-full bg-gray-700 border border-gray-600 rounded px-3 py-2" id="new-meeting-name" readonly>
+        <input type="text" class="w-full bg-gray-700 border border-gray-600 rounded px-3 py-2" id="new-meeting-name"
+          readonly>
       </div>
       <div class="flex justify-end space-x-2">
         <button class="px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded" id="cancel-new-meeting">Cancel</button>
@@ -295,7 +382,8 @@
   </div>
 
   <!-- Invite Friends Modal -->
-  <div class="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 hidden" id="invite-friends-modal">
+  <div class="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 hidden"
+    id="invite-friends-modal">
     <div class="bg-gray-800 rounded-xl p-6 w-full max-w-md invite-friends-modal">
       <div class="flex justify-between items-center mb-4">
         <h2 class="text-xl font-bold">Invite Friends</h2>
@@ -306,7 +394,8 @@
       <div class="mb-4">
         <label class="block text-sm font-medium mb-2">Meeting Link</label>
         <div class="flex">
-          <input type="text" class="flex-1 bg-gray-700 border border-gray-600 rounded-l px-3 py-2 text-sm" readonly id="meeting-link">
+          <input type="text" class="flex-1 bg-gray-700 border border-gray-600 rounded-l px-3 py-2 text-sm" readonly
+            id="meeting-link">
           <button class="bg-blue-600 hover:bg-blue-700 px-3 py-2 rounded-r text-sm" id="copy-meeting-link">
             <i class="fas fa-copy"></i>
           </button>
@@ -315,7 +404,8 @@
       <div class="mb-4">
         <label class="block text-sm font-medium mb-2">Invite via Email</label>
         <div class="flex space-x-2">
-          <input type="email" placeholder="Enter email addresses" class="flex-1 bg-gray-700 border border-gray-600 rounded px-3 py-2 text-sm" id="invite-emails" multiple>
+          <input type="email" placeholder="Enter email addresses"
+            class="flex-1 bg-gray-700 border border-gray-600 rounded px-3 py-2 text-sm" id="invite-emails" multiple>
           <button class="bg-blue-600 hover:bg-blue-700 px-3 py-2 rounded text-sm" id="send-invites">
             <i class="fas fa-paper-plane"></i>
           </button>
@@ -325,16 +415,20 @@
       <div>
         <h3 class="text-sm font-medium mb-2">Quick Share</h3>
         <div class="grid grid-cols-4 gap-2">
-          <button class="p-2 bg-gray-700 hover:bg-gray-600 rounded flex flex-col items-center justify-center text-xs" id="share-whatsapp">
+          <button class="p-2 bg-gray-700 hover:bg-gray-600 rounded flex flex-col items-center justify-center text-xs"
+            id="share-whatsapp">
             <i class="fab fa-whatsapp text-green-400 text-lg mb-1"></i> WhatsApp
           </button>
-          <button class="p-2 bg-gray-700 hover:bg-gray-600 rounded flex flex-col items-center justify-center text-xs" id="share-email">
+          <button class="p-2 bg-gray-700 hover:bg-gray-600 rounded flex flex-col items-center justify-center text-xs"
+            id="share-email">
             <i class="fas fa-envelope text-blue-400 text-lg mb-1"></i> Email
           </button>
-          <button class="p-2 bg-gray-700 hover:bg-gray-600 rounded flex flex-col items-center justify-center text-xs" id="share-sms">
+          <button class="p-2 bg-gray-700 hover:bg-gray-600 rounded flex flex-col items-center justify-center text-xs"
+            id="share-sms">
             <i class="fas fa-sms text-yellow-400 text-lg mb-1"></i> SMS
           </button>
-          <button class="p-2 bg-gray-700 hover:bg-gray-600 rounded flex flex-col items-center justify-center text-xs" id="share-copy">
+          <button class="p-2 bg-gray-700 hover:bg-gray-600 rounded flex flex-col items-center justify-center text-xs"
+            id="share-copy">
             <i class="fas fa-copy text-gray-400 text-lg mb-1"></i> Copy
           </button>
         </div>
@@ -343,7 +437,8 @@
   </div>
 
   <!-- Join Meeting Modal -->
-  <div class="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 hidden" id="join-meeting-modal">
+  <div class="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 hidden"
+    id="join-meeting-modal">
     <div class="bg-gray-800 rounded-lg p-6 w-full max-w-md">
       <h2 class="text-xl font-bold mb-4">Join Meeting</h2>
       <div class="mb-4">
@@ -352,7 +447,8 @@
       </div>
       <div class="mb-4">
         <label class="block text-sm font-medium mb-1">Your Name</label>
-        <input type="text" class="w-full bg-gray-700 border border-gray-600 rounded px-3 py-2" id="participant-name" readonly>
+        <input type="text" class="w-full bg-gray-700 border border-gray-600 rounded px-3 py-2" id="participant-name"
+          readonly>
       </div>
       <div class="mb-4">
         <label class="flex items-center space-x-2">
@@ -368,12 +464,14 @@
   </div>
 
   <!-- Schedule Meeting Modal -->
-  <div class="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 hidden" id="schedule-meeting-modal">
+  <div class="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 hidden"
+    id="schedule-meeting-modal">
     <div class="bg-gray-800 rounded-lg p-6 w-full max-w-md">
       <h2 class="text-xl font-bold mb-4">Schedule Meeting</h2>
       <div class="mb-4">
         <label class="block text-sm font-medium mb-1">Meeting Title</label>
-        <input type="text" class="w-full bg-gray-700 border border-gray-600 rounded px-3 py-2" id="schedule-title" placeholder="Creative Review">
+        <input type="text" class="w-full bg-gray-700 border border-gray-600 rounded px-3 py-2" id="schedule-title"
+          placeholder="Creative Review">
       </div>
       <div class="grid grid-cols-2 gap-4 mb-4">
         <div>
@@ -396,7 +494,8 @@
       </div>
       <div class="mb-4">
         <label class="block text-sm font-medium mb-1">Invitees</label>
-        <input type="text" class="w-full bg-gray-700 border border-gray-600 rounded px-3 py-2" id="schedule-invitees" placeholder="Enter email addresses">
+        <input type="text" class="w-full bg-gray-700 border border-gray-600 rounded px-3 py-2" id="schedule-invitees"
+          placeholder="Enter email addresses">
       </div>
       <div class="flex justify-end space-x-2">
         <button class="px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded" id="cancel-schedule">Cancel</button>
@@ -406,7 +505,8 @@
   </div>
 
   <!-- Notification Toast -->
-  <div class="fixed bottom-4 right-4 bg-gray-800 text-white px-4 py-2 rounded-lg shadow-lg text-sm hidden" id="notification-toast">
+  <div class="fixed bottom-4 right-4 bg-gray-800 text-white px-4 py-2 rounded-lg shadow-lg text-sm hidden"
+    id="notification-toast">
     <div class="flex items-center">
       <i class="fas fa-check-circle text-green-400 mr-2"></i>
       <span id="notification-message">Meeting link copied to clipboard</span>
@@ -414,7 +514,7 @@
   </div>
 
   <script src="/socket.io/socket.io.js"></script>
-    <script src="/meet/socket.io/socket.io.js"></script>
+  <script src="/meet/socket.io/socket.io.js"></script>
 
   <script>
     const path = window.location.pathname.startsWith('/meet/')
@@ -423,6 +523,8 @@
 
     const socket = io({
       path: path,
+      withCredentials: true
+
     });
 
     const newMeetingBtn = document.getElementById('new-meeting-btn');
@@ -465,7 +567,7 @@
     });
     socket.on('error', ({ message }) => {
       showNotification(message);
-      window.location.href = 'https://localhost/login.php';
+      window.location.href = '../contents/admin/login.php';
     });
 
     // Input Sanitization
@@ -489,16 +591,17 @@
         sessionUsername = data.username || null;
         if (!sessionUsername) {
           showNotification('Please log in to continue.');
-          window.location.href = 'https://localhost/login.php';
+          window.location.href = '../contents/admin/login.php';
           return;
         }
         newMeetingNameInput.value = sessionUsername;
         participantNameInput.value = sessionUsername;
         userNameDisplay.textContent = sessionUsername;
+        sessionStorage.setItem('sessionUsername', sessionUsername);
       } catch (error) {
         console.error('Error fetching session:', error);
         showNotification('Failed to load session. Please log in.');
-        window.location.href = 'https://localhost/login.php';
+        window.location.href = '../contents/admin/login.php';
       }
     }
 
@@ -515,7 +618,7 @@
       sessionId = getSessionId();
       if (!sessionId) {
         showNotification('No session found. Please log in.');
-        window.location.href = 'https://localhost/login.php';
+        window.location.href = '../contents/admin/login.php';
         return;
       }
 
@@ -537,7 +640,6 @@
       confirmScheduleBtn.addEventListener('click', scheduleMeeting);
       cancelScheduleBtn.addEventListener('click', () => scheduleMeetingModal.classList.add('hidden'));
 
-      // Remove Enter key handlers for readonly inputs
       joinMeetingId.addEventListener('keypress', (e) => {
         if (e.key === 'Enter') joinMeeting();
       });
@@ -553,6 +655,7 @@
       return `${result.slice(0, 3)}-${result.slice(3, 6)}-${result.slice(6)}`;
     }
 
+    
     // Update meeting link
     function updateMeetingLink(room = '') {
       const link = room ? `${window.location.origin}/meeting.html?room=${encodeURIComponent(room)}` : '';
@@ -563,7 +666,7 @@
     function showNewMeetingModal() {
       if (!sessionUsername || !sessionId) {
         showNotification('Please log in to start a meeting.');
-        window.location.href = 'https://localhost/login.php';
+        window.location.href = '../contents/admin/login.php';
         return;
       }
       newMeetingModal.classList.remove('hidden');
@@ -574,19 +677,27 @@
     function startNewMeeting() {
       if (!sessionUsername || !sessionId) {
         showNotification('Please log in to start a meeting.');
-        window.location.href = 'https://localhost/login.php';
+        window.location.href = '../contents/admin/login.php';
         return;
       }
       const room = generateMeetingId();
-      newMeetingModal.classList.add('hidden');
-      window.location.href = `./meeting.html?room=${encodeURIComponent(room)}`;
+      sessionStorage.setItem('sessionUsername', sessionUsername);
+      socket.emit('join-room', { room, name: sessionUsername, sessionId }, (response) => {
+        if (response.error) {
+          showNotification(response.error);
+          window.location.href = '../contents/admin/login.php';
+          return;
+        }
+        newMeetingModal.classList.add('hidden');
+        window.location.href = `./meeting.html?room=${encodeURIComponent(room)}`;
+      });
     }
 
     // Show join meeting modal
     function showJoinMeetingModal() {
       if (!sessionUsername || !sessionId) {
         showNotification('Please log in to join a meeting.');
-        window.location.href = 'https://localhost/login.php';
+        window.location.href = '../contents/admin/login.php';
         return;
       }
       joinMeetingModal.classList.remove('hidden');
@@ -598,7 +709,7 @@
     function joinMeeting() {
       if (!sessionUsername || !sessionId) {
         showNotification('Please log in to join a meeting.');
-        window.location.href = 'https://localhost/login.php';
+        window.location.href = '../contents/admin/login.php';
         return;
       }
       const room = joinMeetingId.value.trim();
@@ -614,9 +725,10 @@
         socket.emit('join-room', { room, name: sessionUsername, sessionId }, (response) => {
           if (response.error) {
             showNotification(response.error);
-            window.location.href = 'https://localhost/login.php';
+            window.location.href = '../contents/admin/login.php';
             return;
           }
+          sessionStorage.setItem('sessionUsername', sessionUsername);
           window.location.href = `./meeting.html?room=${encodeURIComponent(room)}`;
         });
       });
@@ -627,7 +739,7 @@
     function showScheduleMeetingModal() {
       if (!sessionUsername || !sessionId) {
         showNotification('Please log in to schedule a meeting.');
-        window.location.href = 'https://localhost/login.php';
+        window.location.href = '../contents/admin/login.php';
         return;
       }
       scheduleMeetingModal.classList.remove('hidden');
@@ -639,7 +751,7 @@
     function scheduleMeeting() {
       if (!sessionUsername || !sessionId) {
         showNotification('Please log in to schedule a meeting.');
-        window.location.href = 'https://localhost/login.php';
+        window.location.href = '../contents/admin/login.php';
         return;
       }
       const title = document.getElementById('schedule-title').value.trim();
@@ -678,7 +790,7 @@
     function showInviteFriendsModal() {
       if (!sessionUsername || !sessionId) {
         showNotification('Please log in to invite friends.');
-        window.location.href = 'https://localhost/login.php';
+        window.location.href = '../contents/admin/login.php';
         return;
       }
       updateMeetingLink();
@@ -705,7 +817,7 @@
     function sendEmailInvites() {
       if (!sessionUsername || !sessionId) {
         showNotification('Please log in to send invites.');
-        window.location.href = 'https://localhost/login.php';
+        window.location.href = '../contents/admin/login.php';
         return;
       }
       const emails = inviteEmails.value.trim();
@@ -773,4 +885,5 @@
     document.addEventListener('DOMContentLoaded', init);
   </script>
 </body>
+
 </html>

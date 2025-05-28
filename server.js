@@ -1,12 +1,11 @@
 const fs = require('fs');
-const http = require('http');
+const http = require('http'); // Use http instead of https
 const express = require('express');
 const { Server } = require('socket.io');
-const axios = require('axios');
 
 const app = express();
 
-// Create HTTP server
+// Create HTTP server (no SSL certificates needed)
 const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
@@ -30,22 +29,6 @@ app.get('/meet', (req, res) => {
 // Room data structure
 const rooms = new Map();
 
-// Validate PHP session
-async function validateSession(sessionId) {
-  try {
-    const response = await axios.get('https://localhost/get-session.php', {
-      headers: { 'Cookie': `PHPSESSID=${sessionId}` },
-      httpsAgent: new (require('https').Agent)({
-        rejectUnauthorized: false // Allow self-signed certificates (remove in production)
-      })
-    });
-    return response.data.username || null;
-  } catch (error) {
-    console.error('Error validating session:', error.message);
-    return null;
-  }
-}
-
 io.on('connection', (socket) => {
   console.log(`User connected: ${socket.id}`);
 
@@ -53,22 +36,7 @@ io.on('connection', (socket) => {
     cb(rooms.has(room));
   });
 
-  socket.on('join-room', async ({ room, name, sessionId }, callback) => {
-    // Validate session
-    const sessionUsername = await validateSession(sessionId);
-    if (!sessionUsername || sessionUsername === 'Anonymous') {
-      socket.emit('error', { message: 'Invalid session. Please log in.' });
-      if (callback) callback({ error: 'Invalid session. Please log in.' });
-      return;
-    }
-
-    // Ensure the provided name matches the session username
-    if (name && name !== sessionUsername) {
-      socket.emit('error', { message: 'Name does not match session username.' });
-      if (callback) callback({ error: 'Name does not match session username.' });
-      return;
-    }
-
+  socket.on('join-room', ({ room, name }, callback) => {
     if (!rooms.has(room)) {
       rooms.set(room, {
         users: [],
@@ -89,11 +57,10 @@ io.on('connection', (socket) => {
       return;
     }
 
-    const userName = sessionUsername || 'Anonymous'; // Use session username
-    roomData.users.push({ id: socket.id, name: userName });
+    roomData.users.push({ id: socket.id, name: name || 'Anonymous' });
     socket.join(room);
 
-    socket.to(room).emit('user-connected', { id: socket.id, name: userName });
+    socket.to(room).emit('user-connected', { id: socket.id, name });
 
     const usersInRoom = roomData.users
       .filter((user) => user.id !== socket.id)
@@ -223,21 +190,11 @@ io.on('connection', (socket) => {
       });
     });
   });
-
-  // Handle schedule-meeting event
-  socket.on('schedule-meeting', ({ room, title, date, time, duration, invitees }, callback) => {
-    console.log(`Scheduled meeting: ${title} at ${date} ${time} for ${duration} with invitees: ${invitees.join(', ')}`);
-    if (callback) callback({ success: true, room });
-  });
-
-  // Handle send-invites event
-  socket.on('send-invites', ({ emails, link }, callback) => {
-    console.log(`Sending invites to: ${emails.join(', ')} with link: ${link}`);
-    if (callback) callback({ success: true });
-  });
 });
 
 // Start server on HTTP
 server.listen(3000, '0.0.0.0', () => {
   console.log('Server running at http://localhost:3000');
 });
+
+ 
