@@ -1139,6 +1139,8 @@
       isMicOn: true,
       isCameraOn: false, // Default video off
       isScreenSharing: false,
+      isHost: false,
+      isReactionsPopupOpen: false,
       isHandRaised: false,
       isRecording: false,
       isSidebarOpen: false,
@@ -1182,34 +1184,38 @@
         return;
       }
 
-      fetchSession().then((sessionData) => {
-        if (!sessionData) return;
+     fetchSession().then((sessionData) => {
+  if (!sessionData) return;
 
-        userName = sessionData.username;
-        state.participantNames.set("local", sanitizeInput(userName));
-        state.connectedUsers.add(socket.id);
+  userName = sessionData.username;
+  const ishostname = sessionData.meeting.host_name;
+  state.participantNames.set("local", sanitizeInput(userName));
+  state.connectedUsers.add(socket.id);
 
-        elements.meetingTitle.textContent = sessionData.meeting.title || "Creative Review";
-        state.isHost = sessionData.meeting.host_name === userName;
-        if (state.isHost) {
-          elements.endCallBtn.classList.remove("hidden");
-        }
+  elements.meetingTitle.textContent = sessionData.meeting.title || "Creative Review";
+  state.meetingOptions.host_name = ishostname;
+  state.isHost = ishostname === userName;
 
-        sessionStorage.setItem('videoEnabled', mediaState.videoEnabled);
-        sessionStorage.setItem('audioEnabled', mediaState.audioEnabled);
+  if (state.isHost) {
+    elements.endCallBtn.classList.remove("hidden");
+    document.getElementById("ishostt").style.visibility = "visible"; // Show host badge in UI
+  }
 
-        setupMeeting();
+  sessionStorage.setItem('videoEnabled', mediaState.videoEnabled);
+  sessionStorage.setItem('audioEnabled', mediaState.audioEnabled);
 
-        elements.submitUsername.addEventListener("click", handleUsernameSubmit);
-        elements.usernameInput.addEventListener("keypress", (e) => {
-          if (e.key === "Enter") handleUsernameSubmit();
-        });
-        elements.closeUsernameModal.addEventListener("click", () => {
-          window.location.href = "../contents/admin/login.php";
-        });
+  setupMeeting();
 
-        window.addEventListener("beforeunload", cleanup);
-      });
+  elements.submitUsername.addEventListener("click", handleUsernameSubmit);
+  elements.usernameInput.addEventListener("keypress", (e) => {
+    if (e.key === "Enter") handleUsernameSubmit();
+  });
+  elements.closeUsernameModal.addEventListener("click", () => {
+    window.location.href = "../contents/admin/login.php";
+  });
+
+  window.addEventListener("beforeunload", cleanup);
+});
     }
 
     // Input Sanitization
@@ -1597,6 +1603,8 @@
         const hostBadge = document.getElementById("ishostt");
         if (hostBadge) {
           hostBadge.style.visibility = "visible";
+          const hostBadgeElement = document.createElement("span");
+
         }
       }
 
@@ -1691,40 +1699,47 @@
     }
 
     // Add Participant
-    function addParticipant(id, name, isHost = false, isHandRaised = false, isScreenSharing = false) {
-      state.participantNames.set(id, sanitizeInput(name || "Anonymous"));
+    function addParticipant(id, name, isHost, isHandRaised = false, isScreenSharing = false) {
+      const sanitizedName = sanitizeInput(name) || "Anonymous";
+      state.participantNames.set(id, sanitizedName);
+
+      // Helper: create a badge
+      function createBadge(className, textContent) {
+        const badge = document.createElement("span");
+        badge.className = `${className} text-xs px-1 rounded`;
+        badge.textContent = textContent;
+        return badge;
+      }
+
       const existingParticipant = elements.participantsList.querySelector(`[data-id="${id}"]`);
+      const screenSharing = isScreenSharing || state.screenSharingParticipant === id;
+      const isParticipantHost = isHost || sanitizedName === state.meetingOptions.host_name;
+
       if (existingParticipant) {
         const infoDiv = existingParticipant.querySelector(".flex.items-center.space-x-2");
-        infoDiv.querySelector("span.font-medium").textContent = name;
-        const screenShareIndicator = existingParticipant.querySelector(".participant-screen-sharing");
-        if (screenShareIndicator) screenShareIndicator.remove();
-        const handBadge = existingParticipant.querySelector(".hand-raised-badge");
-        if (handBadge) handBadge.remove();
-        const hostBadge = existingParticipant.querySelector(".host-badge");
-        if (hostBadge) hostBadge.remove();
+        infoDiv.querySelector("span.font-medium").textContent = sanitizedName;
 
-        if (isScreenSharing || state.screenSharingParticipant === id) {
-          const indicator = document.createElement("span");
-          indicator.className = "participant-screen-sharing text-xs bg-green-500 text-white px-1 rounded";
-          indicator.textContent = "Screen Sharing";
-          infoDiv.appendChild(indicator);
+        // Remove previous badges
+        ["participant-screen-sharing", "hand-raised-badge", "host-badge"].forEach(cls => {
+          const badge = infoDiv.querySelector(`.${cls}`);
+          if (badge) badge.remove();
+        });
+
+        // Add updated badges
+        if (screenSharing) {
+          infoDiv.appendChild(createBadge("participant-screen-sharing bg-green-500 text-white", "Screen Sharing"));
         }
         if (isHandRaised) {
-          const handBadge = document.createElement("span");
-          handBadge.className = "hand-raised-badge text-xs bg-yellow-500 text-yellow-900 px-1 rounded";
-          handBadge.textContent = "Hand raised";
-          infoDiv.appendChild(handBadge);
+          infoDiv.appendChild(createBadge("hand-raised-badge bg-yellow-500 text-yellow-900", "Hand raised"));
         }
-        if (isHost) {
-          const hostBadge = document.createElement("span");
-          hostBadge.className = "host-badge text-xs bg-blue-500 text-white px-1 rounded";
-          hostBadge.textContent = "Host";
-          infoDiv.appendChild(hostBadge);
+        if (isParticipantHost) {
+          infoDiv.appendChild(createBadge("host-badge bg-blue-500 text-white", "Host"));
         }
+
         return;
       }
 
+      // Create a new participant entry
       const participantElement = document.createElement("div");
       participantElement.className = `flex items-center justify-between p-2 ${id === "local" ? "bg-gray-700" : "hover:bg-gray-700"} rounded`;
       participantElement.dataset.id = id;
@@ -1734,46 +1749,41 @@
 
       const avatar = document.createElement("div");
       avatar.className = `w-8 h-8 rounded-full ${id === "local" ? "bg-blue-500" : "bg-purple-500"} flex items-center justify-center text-xs`;
-      avatar.innerHTML = id === "local" ? '<i class="fas fa-user"></i>' : name.split(" ").map((n) => n[0]).join("");
+      avatar.innerHTML = id === "local"
+        ? '<i class="fas fa-user"></i>'
+        : sanitizedName.split(" ").map(n => n[0]?.toUpperCase()).join("") || "?";
 
       const nameSpan = document.createElement("span");
       nameSpan.className = "font-medium text-sm";
-      nameSpan.textContent = name;
+      nameSpan.textContent = sanitizedName;
 
       infoDiv.appendChild(avatar);
       infoDiv.appendChild(nameSpan);
 
-      if (isHost) {
-        const hostBadge = document.createElement("span");
-        hostBadge.className = "host-badge text-xs bg-blue-500 text-white px-1 rounded";
-        hostBadge.textContent = "Host";
-        infoDiv.appendChild(hostBadge);
+      // Add badges conditionally
+      if (isParticipantHost) {
+        infoDiv.appendChild(createBadge("host-badge bg-blue-500 text-white", "Host"));
       }
-
       if (isHandRaised) {
-        const handBadge = document.createElement("span");
-        handBadge.className = "hand-raised-badge text-xs bg-yellow-500 text-yellow-900 px-1 rounded";
-        handBadge.textContent = "Hand raised";
-        infoDiv.appendChild(handBadge);
+        infoDiv.appendChild(createBadge("hand-raised-badge bg-yellow-500 text-yellow-900", "Hand raised"));
+      }
+      if (screenSharing) {
+        infoDiv.appendChild(createBadge("participant-screen-sharing bg-green-500 text-white", "Screen Sharing"));
       }
 
-      if (isScreenSharing || state.screenSharingParticipant === id) {
-        const screenShareIndicator = document.createElement("span");
-        screenShareIndicator.className = "participant-screen-sharing text-xs bg-green-500 text-white px-1 rounded";
-        screenShareIndicator.textContent = "Screen Sharing";
-        infoDiv.appendChild(screenShareIndicator);
-      }
-
+      // Create control buttons (mute, video)
       const controlsDiv = document.createElement("div");
       controlsDiv.className = "flex space-x-1";
 
       const muteBtn = document.createElement("button");
       muteBtn.className = "text-xs bg-gray-600 hover:bg-gray-500 px-2 py-1 rounded";
+      muteBtn.setAttribute("aria-label", "Mute participant");
       muteBtn.innerHTML = '<i class="fas fa-microphone"></i>';
       muteBtn.addEventListener("click", () => toggleRemoteMute(id));
 
       const videoBtn = document.createElement("button");
       videoBtn.className = "text-xs bg-gray-600 hover:bg-gray-500 px-2 py-1 rounded";
+      videoBtn.setAttribute("aria-label", "Toggle video");
       videoBtn.innerHTML = '<i class="fas fa-video"></i>';
       videoBtn.addEventListener("click", () => toggleRemoteVideo(id));
 
@@ -1782,10 +1792,11 @@
 
       participantElement.appendChild(infoDiv);
       participantElement.appendChild(controlsDiv);
-
       elements.participantsList.appendChild(participantElement);
+
       updateParticipantCount();
     }
+
 
     // Toggle Microphone
     function toggleMic() {
@@ -2762,22 +2773,34 @@
       );
     }
 
-    // Update Participant List
-    function updateParticipantList() {
-      // Clear the participant list to prevent duplicates
-      elements.participantsList.innerHTML = "";
+ function updateParticipantList() {
+  elements.participantsList.innerHTML = "";
 
-      // Add local participant
-      addParticipant("local", userName, state.isHost, state.isHandRaised, state.screenSharingParticipant === socket.id);
+  // Add local participant
+  addParticipant(
+    "local",
+    userName,
+    state.isHost,
+    state.isHandRaised,
+    state.screenSharingParticipant === socket.id
+  );
 
-      // Add remote participants
-      state.peers.forEach((_, id) => {
-        const name = state.participantNames.get(id) || "Anonymous";
-        const handRaised = state.peerStreams.get(id)?.handRaised || false;
-        const isScreenSharing = state.screenSharingParticipant === id;
-        addParticipant(id, name, false, handRaised, isScreenSharing);
-      });
+  // Add remote participants
+  state.peers.forEach((_, id) => {
+    const name = state.participantNames.get(id) || "Anonymous";
+    if (!state.participantNames.has(id)) {
+      state.participantNames.set(id, name);
     }
+    const handRaised = state.peerStreams.get(id)?.handRaised || false;
+    const isScreenSharing = state.screenSharingParticipant === id;
+    const isHost = name === state.meetingOptions.host_name || state.peers.get(id)?.isHost;
+
+    addParticipant(id, name, isHost, handRaised, isScreenSharing);
+  });
+
+  updateParticipantCount();
+}
+
 
     // Leave Call
     function leaveCall() {
@@ -3013,7 +3036,7 @@
         state.connectedUsers.add(id);
         state.participantNames.set(id, sanitizeInput(name || "Anonymous"));
         const pc = createPeerConnection(id, name, true);
-        addParticipant(id, name, isHost, false);
+        addParticipant(id, name, isHost, false); // Pass isHost directly
         showNotification(`${sanitizeInput(name)} joined the meeting`);
       });
 
@@ -3070,16 +3093,28 @@
         }
       });
 
-      socket.on("toggle-hand", ({ id, raised }) => {
-        if (state.peerStreams.has(id)) {
-          state.peerStreams.get(id).handRaised = raised;
+      socket.on("toggle-hand", ({ participantId, raised }) => {
+        if (participantId !== socket.id) {
+          const stream = state.peerStreams.get(participantId);
+          if (stream) stream.handRaised = raised;
+          updateParticipantList();
+          showNotification(
+            `${state.participantNames.get(participantId) || "A participant"} ${raised ? "raised their hand" : "lowered their hand"}`
+          );
         }
-        updateParticipantList();
-        showNotification(
-          `${sanitizeInput(state.participantNames.get(id) || "A participant")} ${raised ? "raised their hand" : "lowered their hand"
-          }`
-        );
       });
+
+      socket.on("ishostlist",({ participantId, isHost }) => {
+        if (participantId === socket.id) {
+          state.isHost = isHost;
+          elements.hostOptions.classList.toggle("hidden", !isHost);
+          elements.meetingOptionsBtn.classList.toggle("hidden", !isHost);
+          elements.endCallBtn.classList.toggle("hidden", !isHost);
+        }
+        const name = state.participantNames.get(participantId) || "A participant";
+        showNotification(`${sanitizeInput(name)} is now ${isHost ? "the host" : "not the host"}`);
+      });
+
 
       socket.on("toggle-recording", ({ recording, participantId }) => {
         const name = state.participantNames.get(participantId) || "A participant";

@@ -29,7 +29,7 @@ let db;
 async function initializeDatabase() {
   try {
     db = await mysql.createPool(dbConfig);
-    
+
     // Create meetings table if it doesn't exist
     await db.execute(`
       CREATE TABLE IF NOT EXISTS meetings (
@@ -136,9 +136,18 @@ io.on('connection', (socket) => {
           }
           if (participants) {
             try {
+              // Check if participants is a valid JSON string
               users = JSON.parse(participants);
+              if (!Array.isArray(users)) {
+                console.warn(`Participants for room ${room} is not an array, resetting to empty array`);
+                users = [];
+              }
             } catch (error) {
               console.error('Error parsing participants from database:', error);
+              // Log the problematic participants data for debugging
+              console.error('Problematic participants data:', participants);
+              // Reset to empty array to prevent further errors
+              users = [];
             }
           }
         } else {
@@ -168,6 +177,7 @@ io.on('connection', (socket) => {
       return;
     }
 
+    // Rest of the join-room logic remains unchanged
     const roomData = rooms.get(room);
 
     if (roomData.meetingOptions.lockMeeting && !roomData.users.some((user) => user.id === socket.id)) {
@@ -332,51 +342,51 @@ io.on('connection', (socket) => {
   });
 
   socket.on('disconnect', async () => {
-  rooms.forEach(async (roomData, room) => {
-    const userIndex = roomData.users.findIndex((u) => u.id === socket.id);
-    if (userIndex !== -1) {
-      const userName = roomData.users[userIndex].name;
-      roomData.users.splice(userIndex, 1);
-      socket.to(room).emit('user-disconnected', socket.id);
-      if (roomData.screenSharingParticipant?.id === socket.id) {
-        roomData.screenSharingParticipant = null;
-        socket.to(room).emit('screen-share', { participantId: socket.id, sharing: false });
-      }
-      // Update participants in database
-      try {
-        await db.execute(
-          'UPDATE meetings SET participants = ? WHERE room = ?',
-          [JSON.stringify(roomData.users), room]
-        );
-        // Update out_time in participants table
-        await db.execute(
-          'UPDATE participants SET out_time = NOW() WHERE room_id = ? AND participant_id = ? AND out_time IS NULL',
-          [room, socket.id]
-        );
-        // If no users remain, set a timeout to mark meeting as ended after 5 minutes
-        if (roomData.users.length === 0) {
-          const timeoutDuration = 5 * 60 * 1000; // 5 minutes in milliseconds
-          roomData.endTimeout = setTimeout(async () => {
-            try {
-              // Check if room still exists and has no users
-              const roomDataCheck = rooms.get(room);
-              if (roomDataCheck && roomDataCheck.users.length === 0) {
-                await db.execute('UPDATE meetings SET is_ended = TRUE WHERE room = ?', [room]);
-                rooms.delete(room);
-                console.log(`Meeting ${room} marked as ended after 5 minutes of no users.`);
-              }
-            } catch (error) {
-              console.error('Error marking meeting as ended in database:', error);
-            }
-          }, timeoutDuration);
+    rooms.forEach(async (roomData, room) => {
+      const userIndex = roomData.users.findIndex((u) => u.id === socket.id);
+      if (userIndex !== -1) {
+        const userName = roomData.users[userIndex].name;
+        roomData.users.splice(userIndex, 1);
+        socket.to(room).emit('user-disconnected', socket.id);
+        if (roomData.screenSharingParticipant?.id === socket.id) {
+          roomData.screenSharingParticipant = null;
+          socket.to(room).emit('screen-share', { participantId: socket.id, sharing: false });
         }
-      } catch (error) {
-        console.error('Error updating participants or meeting status in database:', error);
+        // Update participants in database
+        try {
+          await db.execute(
+            'UPDATE meetings SET participants = ? WHERE room = ?',
+            [JSON.stringify(roomData.users), room]
+          );
+          // Update out_time in participants table
+          await db.execute(
+            'UPDATE participants SET out_time = NOW() WHERE room_id = ? AND participant_id = ? AND out_time IS NULL',
+            [room, socket.id]
+          );
+          // If no users remain, set a timeout to mark meeting as ended after 5 minutes
+          if (roomData.users.length === 0) {
+            const timeoutDuration = 5 * 60 * 1000; // 5 minutes in milliseconds
+            roomData.endTimeout = setTimeout(async () => {
+              try {
+                // Check if room still exists and has no users
+                const roomDataCheck = rooms.get(room);
+                if (roomDataCheck && roomDataCheck.users.length === 0) {
+                  await db.execute('UPDATE meetings SET is_ended = TRUE WHERE room = ?', [room]);
+                  rooms.delete(room);
+                  console.log(`Meeting ${room} marked as ended after 5 minutes of no users.`);
+                }
+              } catch (error) {
+                console.error('Error marking meeting as ended in database:', error);
+              }
+            }, timeoutDuration);
+          }
+        } catch (error) {
+          console.error('Error updating participants or meeting status in database:', error);
+        }
+        console.log(`User disconnected: ${socket.id} from room ${room} (${userName})`);
       }
-      console.log(`User disconnected: ${socket.id} from room ${room} (${userName})`);
-    }
+    });
   });
-});
 });
 
 // Start server on HTTP
@@ -384,4 +394,3 @@ server.listen(3000, '0.0.0.0', () => {
   console.log('Server running at http://localhost:3000');
 });
 
- 
