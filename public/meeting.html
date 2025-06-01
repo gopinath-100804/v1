@@ -1748,20 +1748,7 @@
     }
 
 
-    // Update Participant Count
-   function updateParticipantList() {
-      elements.participantsList.innerHTML = "";
-      state.connectedUsers.clear();
-      
-      addParticipant("local", userName, state.isHost, state.isHandRaised, state.screenSharingParticipant === socket.id);
-
-      state.peers.forEach((_, id) => {
-        const name = state.participantNames.get(id) || "Anonymous";
-        const handRaised = state.peerStreams.get(id)?.handRaised || false;
-        const isScreenSharing = state.screenSharingParticipant === id;
-        addParticipant(id, name, false, handRaised, isScreenSharing);
-      });
-    }
+   
 
 
     // Toggle Microphone
@@ -2740,22 +2727,7 @@
     }
 
     // Update Participant List
-    function updateParticipantList() {
-      // Clear the participant list to prevent duplicates
-      elements.participantsList.innerHTML = "";
-
-      // Add local participant
-      addParticipant("local", userName, state.isHost, state.isHandRaised, state.screenSharingParticipant === socket.id);
-
-      // Add remote participants
-      state.peers.forEach((_, id) => {
-        const name = state.participantNames.get(id) || "Anonymous";
-        const handRaised = state.peerStreams.get(id)?.handRaised || false;
-        const isScreenSharing = state.screenSharingParticipant === id;
-        addParticipant(id, name, false, handRaised, isScreenSharing);
-      });
-    }
-
+  
     // Leave Call
     function leaveCall() {
       if (confirm("Are you sure you want to leave the meeting?")) {
