@@ -332,39 +332,51 @@ io.on('connection', (socket) => {
   });
 
   socket.on('disconnect', async () => {
-    rooms.forEach(async (roomData, room) => {
-      const userIndex = roomData.users.findIndex((u) => u.id === socket.id);
-      if (userIndex !== -1) {
-        const userName = roomData.users[userIndex].name;
-        roomData.users.splice(userIndex, 1);
-        socket.to(room).emit('user-disconnected', socket.id);
-        if (roomData.screenSharingParticipant?.id === socket.id) {
-          roomData.screenSharingParticipant = null;
-          socket.to(room).emit('screen-share', { participantId: socket.id, sharing: false });
-        }
-        // Update participants in database
-        try {
-          await db.execute(
-            'UPDATE meetings SET participants = ? WHERE room = ?',
-            [JSON.stringify(roomData.users), room]
-          );
-          // Update out_time in participants table
-          await db.execute(
-            'UPDATE participants SET out_time = NOW() WHERE room_id = ? AND participant_id = ? AND out_time IS NULL',
-            [room, socket.id]
-          );
-          // If no users remain, mark meeting as ended
-          if (roomData.users.length === 0) {
-            await db.execute('UPDATE meetings SET is_ended = TRUE WHERE room = ?', [room]);
-            rooms.delete(room);
-          }
-        } catch (error) {
-          console.error('Error updating participants or meeting status in database:', error);
-        }
-        console.log(`User disconnected: ${socket.id} from room ${room} (${userName})`);
+  rooms.forEach(async (roomData, room) => {
+    const userIndex = roomData.users.findIndex((u) => u.id === socket.id);
+    if (userIndex !== -1) {
+      const userName = roomData.users[userIndex].name;
+      roomData.users.splice(userIndex, 1);
+      socket.to(room).emit('user-disconnected', socket.id);
+      if (roomData.screenSharingParticipant?.id === socket.id) {
+        roomData.screenSharingParticipant = null;
+        socket.to(room).emit('screen-share', { participantId: socket.id, sharing: false });
       }
-    });
+      // Update participants in database
+      try {
+        await db.execute(
+          'UPDATE meetings SET participants = ? WHERE room = ?',
+          [JSON.stringify(roomData.users), room]
+        );
+        // Update out_time in participants table
+        await db.execute(
+          'UPDATE participants SET out_time = NOW() WHERE room_id = ? AND participant_id = ? AND out_time IS NULL',
+          [room, socket.id]
+        );
+        // If no users remain, set a timeout to mark meeting as ended after 5 minutes
+        if (roomData.users.length === 0) {
+          const timeoutDuration = 5 * 60 * 1000; // 5 minutes in milliseconds
+          roomData.endTimeout = setTimeout(async () => {
+            try {
+              // Check if room still exists and has no users
+              const roomDataCheck = rooms.get(room);
+              if (roomDataCheck && roomDataCheck.users.length === 0) {
+                await db.execute('UPDATE meetings SET is_ended = TRUE WHERE room = ?', [room]);
+                rooms.delete(room);
+                console.log(`Meeting ${room} marked as ended after 5 minutes of no users.`);
+              }
+            } catch (error) {
+              console.error('Error marking meeting as ended in database:', error);
+            }
+          }, timeoutDuration);
+        }
+      } catch (error) {
+        console.error('Error updating participants or meeting status in database:', error);
+      }
+      console.log(`User disconnected: ${socket.id} from room ${room} (${userName})`);
+    }
   });
+});
 });
 
 // Start server on HTTP
