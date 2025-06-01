@@ -231,7 +231,6 @@
     }
 
     @keyframes typingAnimation {
-
       0%,
       60%,
       100% {
@@ -315,7 +314,7 @@
     </div>
 
     <div class="w-full max-w-4xl px-4">
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12">
         <div class="meeting-card bg-gray-800 bg-opacity-50 backdrop-blur-sm rounded-xl p-6 border border-gray-700">
           <div class="flex items-center mb-4">
             <div class="w-12 h-12 rounded-full bg-blue-500 flex items-center justify-center mr-3">
@@ -344,52 +343,11 @@
             <i class="fas fa-sign-in-alt mr-2"></i> Join
           </button>
         </div>
-        <div class="meeting-card bg-gray-800 bg-opacity-50 backdrop-blur-sm rounded-xl p-6 border border-gray-700">
-          <div class="flex items-center mb-4">
-            <div class="w-12 h-12 rounded-full bg-green-500 flex items-center justify-center mr-3">
-              <i class="fas fa-calendar-alt text-white text-xl"></i>
-            </div>
-            <h3 class="text-lg font-semibold">Schedule</h3>
-          </div>
-          <p class="text-gray-300 mb-4">Plan a meeting for later with calendar integration</p>
-          <button
-            class="w-full bg-gray-700 hover:bg-gray-600 text-white py-2 px-4 rounded-lg flex items-center justify-center"
-            id="schedule-meeting-btn">
-            <i class="fas fa-clock mr-2"></i> Schedule
-          </button>
-        </div>
       </div>
       <div class="bg-gray-800 bg-opacity-50 backdrop-blur-sm rounded-xl p-6 border border-gray-700 max-w-2xl mx-auto">
         <h3 class="text-lg font-semibold mb-4 text-center">Your Recent Meetings</h3>
         <div class="space-y-3" id="recent-meetings">
-          <div class="flex items-center justify-between p-3 hover:bg-gray-700 rounded-lg cursor-pointer">
-            <div class="flex items-center">
-              <div class="w-10 h-10 rounded-full bg-blue-500 flex items-center justify-center mr-3">
-                <i class="fas fa-users text-white"></i>
-              </div>
-              <div>
-                <h4 class="font-medium">Creative Review</h4>
-                <p class="text-xs text-gray-400">Today, 10:00 AM</p>
-              </div>
-            </div>
-            <button class="text-blue-400 hover:text-blue-300">
-              <i class="fas fa-arrow-right"></i>
-            </button>
-          </div>
-          <div class="flex items-center justify-between p-3 hover:bg-gray-700 rounded-lg cursor-pointer">
-            <div class="flex items-center">
-              <div class="w-10 h-10 rounded-full bg-purple-500 flex items-center justify-center mr-3">
-                <i class="fas fa-users text-white"></i>
-              </div>
-              <div>
-                <h4 class="font-medium">Client Presentation</h4>
-                <p class="text-xs text-gray-400">Yesterday, 2:30 PM</p>
-              </div>
-            </div>
-            <button class="text-blue-400 hover:text-blue-300">
-              <i class="fas fa-arrow-right"></i>
-            </button>
-          </div>
+          <!-- Dynamically populated -->
         </div>
       </div>
     </div>
@@ -410,6 +368,11 @@
         <label class="block text-sm font-medium mb-1">Your Name</label>
         <input type="text" class="w-full bg-gray-700 border border-gray-600 rounded px-3 py-2 disabled-input"
           id="new-meeting-name" readonly aria-disabled="true">
+      </div>
+      <div class="mb-4">
+        <label class="block text-sm font-medium mb-1">Meeting Title</label>
+        <input type="text" class="w-full bg-gray-700 border border-gray-600 rounded px-3 py-2"
+          id="new-meeting-title" placeholder="Enter meeting title">
       </div>
       <div class="flex justify-end space-x-2">
         <button class="px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded" id="cancel-new-meeting">Cancel</button>
@@ -506,47 +469,6 @@
     </div>
   </div>
 
-  <!-- Schedule Meeting Modal -->
-  <div class="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 hidden"
-    id="schedule-meeting-modal">
-    <div class="bg-gray-800 rounded-lg p-6 w-full max-w-md">
-      <h2 class="text-xl font-bold mb-4">Schedule Meeting</h2>
-      <div class="mb-4">
-        <label class="block text-sm font-medium mb-1">Meeting Title</label>
-        <input type="text" class="w-full bg-gray-700 border border-gray-600 rounded px-3 py-2" id="schedule-title"
-          placeholder="Creative Review">
-      </div>
-      <div class="grid grid-cols-2 gap-4 mb-4">
-        <div>
-          <label class="block text-sm font-medium mb-1">Date</label>
-          <input type="date" class="w-full bg-gray-700 border border-gray-600 rounded px-3 py-2" id="schedule-date">
-        </div>
-        <div>
-          <label class="block text-sm font-medium mb-1">Time</label>
-          <input type="time" class="w-full bg-gray-700 border border-gray-600 rounded px-3 py-2" id="schedule-time">
-        </div>
-      </div>
-      <div class="mb-4">
-        <label class="block text-sm font-medium mb-1">Duration</label>
-        <select class="w-full bg-gray-700 border border-gray-600 rounded px-3 py-2" id="schedule-duration">
-          <option>30 minutes</option>
-          <option>1 hour</option>
-          <option>1.5 hours</option>
-          <option>2 hours</option>
-        </select>
-      </div>
-      <div class="mb-4">
-        <label class="block text-sm font-medium mb-1">Invitees</label>
-        <input type="text" class="w-full bg-gray-700 border border-gray-600 rounded px-3 py-2" id="schedule-invitees"
-          placeholder="Enter email addresses">
-      </div>
-      <div class="flex justify-end space-x-2">
-        <button class="px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded" id="cancel-schedule">Cancel</button>
-        <button class="px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded" id="confirm-schedule">Schedule</button>
-      </div>
-    </div>
-  </div>
-
   <!-- Notification Toast -->
   <div class="fixed bottom-4 right-4 bg-gray-800 text-white px-4 py-2 rounded-lg shadow-lg text-sm hidden"
     id="notification-toast">
@@ -565,7 +487,6 @@
 
     const newMeetingBtn = document.getElementById('new-meeting-btn');
     const joinMeetingHomeBtn = document.getElementById('join-meeting-home-btn');
-    const scheduleMeetingBtn = document.getElementById('schedule-meeting-btn');
     const inviteFriendsBtn = document.getElementById('invite-friends-btn');
     const inviteFriendsModal = document.getElementById('invite-friends-modal');
     const closeInviteModal = document.getElementById('close-invite-modal');
@@ -578,12 +499,9 @@
     const shareSms = document.getElementById('share-sms');
     const shareCopy = document.getElementById('share-copy');
     const joinMeetingModal = document.getElementById('join-meeting-modal');
-    const scheduleMeetingModal = document.getElementById('schedule-meeting-modal');
     const newMeetingModal = document.getElementById('new-meeting-modal');
     const confirmJoinBtn = document.getElementById('confirm-join');
     const cancelJoinBtn = document.getElementById('cancel-join');
-    const confirmScheduleBtn = document.getElementById('confirm-schedule');
-    const cancelScheduleBtn = document.getElementById('cancel-schedule');
     const confirmNewMeetingBtn = document.getElementById('confirm-new-meeting');
     const cancelNewMeetingBtn = document.getElementById('cancel-new-meeting');
     const joinMeetingId = document.getElementById('join-meeting-id');
@@ -592,6 +510,7 @@
     const notificationToast = document.getElementById('notification-toast');
     const notificationMessage = document.getElementById('notification-message');
     const newMeetingNameInput = document.getElementById('new-meeting-name');
+    const newMeetingTitleInput = document.getElementById('new-meeting-title');
     const userNameDisplay = document.getElementById('user-name');
 
     // Socket.IO debugging
@@ -621,7 +540,7 @@
     // Fetch session data
     async function fetchSession() {
       try {
-        const response = await fetch(`${window.location.origin}/get-session.php`, {
+        const response = await fetch(`${window.location.origin}/contents/files/get-session.php`, {
           credentials: 'include'
         });
         const data = await response.json();
@@ -639,6 +558,36 @@
         console.error('Error fetching session:', error);
         showNotification('Failed to load session. Please log in.');
         window.location.href = '../contents/admin/login.php';
+      }
+    }
+
+    // Fetch recent meetings from the server
+    async function fetchRecentMeetings() {
+      try {
+        const response = await fetch(`${window.location.origin}/contents/files/recent-meetings.php`, {
+          credentials: 'include'
+        });
+        if (!response.ok) {
+          throw new Error('Failed to fetch recent meetings');
+        }
+        const meetings = await response.json();
+        const recentMeetingsDiv = document.getElementById('recent-meetings');
+        recentMeetingsDiv.innerHTML = meetings.length > 0 ? meetings.map(m => `
+      <div class="flex items-center justify-between p-3 hover:bg-gray-700 rounded-lg cursor-pointer">
+        <div class="flex items-center">
+          <div class="w-10 h-10 rounded-full bg-blue-500 flex items-center justify-center mr-3">
+            <i class="fas fa-users text-white"></i>
+          </div>
+          <div>
+            <h4 class="font-medium">${sanitizeInput(m.title)}</h4>
+            <p class="text-xs text-gray-400">${new Date(m.date + 'T' + m.time).toLocaleString('en-US', { dateStyle: 'short', timeStyle: 'short' })}</p>
+          </div>
+        </div>
+      </div>
+    `).join('') : '<p class="text-gray-400 text-center">No recent meetings found.</p>';
+      } catch (error) {
+        console.error('Error fetching recent meetings:', error);
+        showNotification('Failed to load recent meetings.');
       }
     }
 
@@ -662,6 +611,7 @@
     // Initialize
     async function init() {
       await fetchSession();
+      await fetchRecentMeetings();
       sessionId = getSessionId();
       if (!sessionId) {
         showNotification('No session found. Please log in.');
@@ -673,7 +623,6 @@
       confirmNewMeetingBtn.addEventListener('click', startNewMeeting);
       cancelNewMeetingBtn.addEventListener('click', () => newMeetingModal.classList.add('hidden'));
       joinMeetingHomeBtn.addEventListener('click', showJoinMeetingModal);
-      scheduleMeetingBtn.addEventListener('click', showScheduleMeetingModal);
       inviteFriendsBtn.addEventListener('click', showInviteFriendsModal);
       closeInviteModal.addEventListener('click', hideInviteFriendsModal);
       copyMeetingLink.addEventListener('click', copyMeetingLinkToClipboard);
@@ -682,10 +631,8 @@
       shareEmail.addEventListener('click', shareViaEmail);
       shareSms.addEventListener('click', shareViaSms);
       shareCopy.addEventListener('click', copyMeetingLinkToClipboard);
-      confirmJoinBtn.addEventListener('click', joinMeeting);
+      confirmJoinBtn.addEventListener('click', () => joinMeeting());
       cancelJoinBtn.addEventListener('click', () => joinMeetingModal.classList.add('hidden'));
-      confirmScheduleBtn.addEventListener('click', scheduleMeeting);
-      cancelScheduleBtn.addEventListener('click', () => scheduleMeetingModal.classList.add('hidden'));
 
       joinMeetingId.addEventListener('keypress', (e) => {
         if (e.key === 'Enter') joinMeeting();
@@ -694,7 +641,7 @@
 
     // Update meeting link
     function updateMeetingLink(room = '') {
-      const link = room ? `${window.location.origin}/meeting.html?room=${encodeURIComponent(room)}` : '';
+      const link = room ? `${window.location.origin}/meet/meeting.html?room=${encodeURIComponent(room)}` : '';
       meetingLink.value = link;
     }
 
@@ -705,9 +652,10 @@
         window.location.href = '../contents/admin/login.php';
         return;
       }
-      preGeneratedRoomId = generateMeetingId(); // Pre-generate room ID
+      preGeneratedRoomId = generateMeetingId();
       newMeetingModal.classList.remove('hidden');
       newMeetingNameInput.value = sessionUsername;
+      newMeetingTitleInput.value = ''; // Clear title input
     }
 
     // Start new meeting
@@ -718,6 +666,11 @@
         return;
       }
       const room = preGeneratedRoomId || generateMeetingId();
+      const title = newMeetingTitleInput.value.trim();
+      if (!title) {
+        showNotification('Please enter a meeting title.');
+        return;
+      }
       const button = document.getElementById('confirm-new-meeting');
       const buttonText = button.querySelector('.button-text');
       const loader = button.querySelector('.loader');
@@ -727,8 +680,6 @@
       buttonText.textContent = 'Starting...';
       loader.classList.remove('hidden');
 
-      sessionStorage.setItem('sessionUsername', sessionUsername);
-
       // Set a timeout for the socket event
       const timeoutId = setTimeout(() => {
         button.disabled = false;
@@ -737,7 +688,7 @@
         showNotification('Server is taking too long to respond. Please try again.');
       }, 10000); // 10 seconds timeout
 
-      socket.emit('join-room', { room, name: sessionUsername, sessionId }, (response) => {
+      socket.emit('join-room', { room, name: sessionUsername, sessionId, title }, (response) => {
         clearTimeout(timeoutId); // Clear timeout on response
         button.disabled = false;
         buttonText.textContent = 'Start Meeting';
@@ -766,13 +717,13 @@
     }
 
     // Join meeting
-    function joinMeeting() {
+    function joinMeeting(roomId = null) {
       if (!sessionUsername || !sessionId) {
         showNotification('Please log in to join a meeting.');
         window.location.href = '../contents/admin/login.php';
         return;
       }
-      const room = joinMeetingId.value.trim();
+      const room = roomId || joinMeetingId.value.trim();
       if (!room) {
         showNotification('Please enter a meeting ID.');
         return;
@@ -795,14 +746,25 @@
       }, 10000); // 10 seconds timeout
 
       socket.emit('check-room', room, (exists) => {
-        if (!exists && !confirm('Room does not exist. Create a new room?')) {
+        if (exists) {
           clearTimeout(timeoutId);
           button.disabled = false;
           buttonText.textContent = 'Join';
           loader.classList.add('hidden');
-          showNotification('Room does not exist.');
+          sessionStorage.setItem('sessionUsername', sessionUsername);
+          joinMeetingModal.classList.add('hidden');
+          window.location.href = `./meeting.html?room=${encodeURIComponent(room)}`;
+          
+        }
+
+        else {
+          showNotification('Meeting ID does not exist. Please check and try again.');
+          button.disabled = false;
+          buttonText.textContent = 'Join';
+          loader.classList.add('hidden');
           return;
         }
+        
         socket.emit('join-room', { room, name: sessionUsername, sessionId }, (response) => {
           clearTimeout(timeoutId); // Clear timeout on response
           button.disabled = false;
@@ -814,61 +776,8 @@
             window.location.href = '../contents/admin/login.php';
             return;
           }
-          sessionStorage.setItem('sessionUsername', sessionUsername);
-          joinMeetingModal.classList.add('hidden'); // Close modal only after success
-          window.location.href = `./meeting.html?room=${encodeURIComponent(room)}`;
+          
         });
-      });
-    }
-
-    // Show schedule meeting modal
-    function showScheduleMeetingModal() {
-      if (!sessionUsername || !sessionId) {
-        showNotification('Please log in to schedule a meeting.');
-        window.location.href = '../contents/admin/login.php';
-        return;
-      }
-      scheduleMeetingModal.classList.remove('hidden');
-      const today = new Date().toISOString().split('T')[0];
-      document.getElementById('schedule-date').value = today;
-    }
-
-    // Schedule meeting
-    function scheduleMeeting() {
-      if (!sessionUsername || !sessionId) {
-        showNotification('Please log in to schedule a meeting.');
-        window.location.href = '../contents/admin/login.php';
-        return;
-      }
-      const title = document.getElementById('schedule-title').value.trim();
-      const date = document.getElementById('schedule-date').value;
-      const time = document.getElementById('schedule-time').value;
-      const duration = document.getElementById('schedule-duration').value;
-      const invitees = document.getElementById('schedule-invitees').value.trim();
-
-      if (!title || !date || !time) {
-        showNotification('Please fill in all required fields.');
-        return;
-      }
-
-      const room = generateMeetingId();
-      const sanitizedTitle = sanitizeInput(title);
-      const sanitizedInvitees = sanitizeInput(invitees);
-
-      socket.emit('schedule-meeting', {
-        room,
-        title: sanitizedTitle,
-        date,
-        time,
-        duration,
-        invitees: sanitizedInvitees.split(',').map(email => email.trim()).filter(email => email)
-      }, (response) => {
-        if (response.success) {
-          showNotification('Meeting scheduled successfully.');
-          scheduleMeetingModal.classList.add('hidden');
-        } else {
-          showNotification('Failed to schedule meeting.');
-        }
       });
     }
 
