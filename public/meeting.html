@@ -618,7 +618,7 @@
       }
     }
 
-    #ishostt {
+    #ishostt, #end-call-btn {
       visibility: hidden;
     }
   </style>
@@ -1137,6 +1137,7 @@
       localStream: null,
       screenStream: null,
       isMicOn: true,
+      originalAudioTrack: null, // Add this to store the original audio track
       isCameraOn: false, // Default video off
       isScreenSharing: false,
       isHost: false,
@@ -1184,38 +1185,38 @@
         return;
       }
 
-     fetchSession().then((sessionData) => {
-  if (!sessionData) return;
+      fetchSession().then((sessionData) => {
+        if (!sessionData) return;
 
-  userName = sessionData.username;
-  const ishostname = sessionData.meeting.host_name;
-  state.participantNames.set("local", sanitizeInput(userName));
-  state.connectedUsers.add(socket.id);
+        userName = sessionData.username;
+        const ishostname = sessionData.meeting.host_name;
+        state.participantNames.set("local", sanitizeInput(userName));
+        state.connectedUsers.add(socket.id);
 
-  elements.meetingTitle.textContent = sessionData.meeting.title || "Creative Review";
-  state.meetingOptions.host_name = ishostname;
-  state.isHost = ishostname === userName;
+        elements.meetingTitle.textContent = sessionData.meeting.title || "Creative Review";
+        state.meetingOptions.host_name = ishostname;
+        state.isHost = ishostname === userName;
 
-  if (state.isHost) {
-    elements.endCallBtn.classList.remove("hidden");
-    document.getElementById("ishostt").style.visibility = "visible"; // Show host badge in UI
-  }
+        if (state.isHost) {
+          document.getElementById("end-call-btn").style.visibility = "visible";
+          document.getElementById("ishostt").style.visibility = "visible"; // Show host badge in UI
+        }
 
-  sessionStorage.setItem('videoEnabled', mediaState.videoEnabled);
-  sessionStorage.setItem('audioEnabled', mediaState.audioEnabled);
+        sessionStorage.setItem('videoEnabled', mediaState.videoEnabled);
+        sessionStorage.setItem('audioEnabled', mediaState.audioEnabled);
 
-  setupMeeting();
+        setupMeeting();
 
-  elements.submitUsername.addEventListener("click", handleUsernameSubmit);
-  elements.usernameInput.addEventListener("keypress", (e) => {
-    if (e.key === "Enter") handleUsernameSubmit();
-  });
-  elements.closeUsernameModal.addEventListener("click", () => {
-    window.location.href = "../contents/admin/login.php";
-  });
+        elements.submitUsername.addEventListener("click", handleUsernameSubmit);
+        elements.usernameInput.addEventListener("keypress", (e) => {
+          if (e.key === "Enter") handleUsernameSubmit();
+        });
+        elements.closeUsernameModal.addEventListener("click", () => {
+          window.location.href = "../contents/admin/login.php";
+        });
 
-  window.addEventListener("beforeunload", cleanup);
-});
+        window.addEventListener("beforeunload", cleanup);
+      });
     }
 
     // Input Sanitization
@@ -1366,7 +1367,7 @@
           socket.emit("check-host", { room }, (response) => {
             state.isHost = response.isHost;
             if (state.isHost) {
-              elements.endCallBtn.classList.remove("hidden");
+              document.getElementById("end-call-btn").style.visibility = "visible";
             }
           });
 
@@ -1502,7 +1503,7 @@
         if (video && stream) {
           video.srcObject = stream;
           video.classList.toggle("camera-video", !isSharing);
-          video.muted = isLocal;
+          video.muted = isLocal; // Mute only local playback
           video.play().catch((err) => console.error(`Video play failed for ${participantId}:`, err));
         }
 
@@ -1523,7 +1524,13 @@
             const screenShareVideo = elements.screenShareOverlay.querySelector("video");
             screenShareVideo.srcObject = stream;
             screenShareVideo.classList.remove("camera-video");
-            screenShareVideo.muted = true;
+            screenShareVideo.muted = true; // Mute local screen share to prevent feedback
+            screenShareVideo.play().catch((err) => console.error("Screen share video play failed:", err));
+          } else {
+            const screenShareVideo = elements.screenShareOverlay.querySelector("video");
+            screenShareVideo.srcObject = stream;
+            screenShareVideo.classList.remove("camera-video");
+            screenShareVideo.muted = false; // Ensure remote screen share audio is playable
             screenShareVideo.play().catch((err) => console.error("Screen share video play failed:", err));
           }
         } else {
@@ -1532,7 +1539,7 @@
 
         existingContainer.className = state.focusedParticipant === participantId ? "video-main" : "participant-tile";
         updateVideoGridLayout();
-        updateParticipantList(); // Ensure participant list reflects updated name
+        updateParticipantList();
         return;
       }
 
@@ -1888,20 +1895,31 @@
             state.screenStream.getVideoTracks().forEach((track) => combinedStream.addTrack(track));
           }
 
-          if (mediaState.activeAudioTrack) {
-            mediaState.activeAudioTrack.enabled = false;
-          }
+          // Store the original audio track for restoration later
+          state.originalAudioTrack = mediaState.activeAudioTrack;
 
+          // Update video and audio tracks for sending
           mediaState.activeVideoTrack = combinedStream.getVideoTracks()[0];
           const audioTracks = combinedStream.getAudioTracks();
 
           state.peers.forEach((pc, id) => {
+            // Replace video track
             const videoSender = pc.getSenders().find((s) => s.track?.kind === "video");
-            if (videoSender) videoSender.replaceTrack(mediaState.activeVideoTrack);
+            if (videoSender) {
+              videoSender.replaceTrack(mediaState.activeVideoTrack).catch((err) => {
+                console.error(`Failed to replace video track for peer ${id}:`, err);
+              });
+            } else {
+              pc.addTrack(mediaState.activeVideoTrack, combinedStream);
+            }
+
+            // Replace or add audio tracks, but preserve incoming audio
             audioTracks.forEach((audioTrack) => {
               const audioSender = pc.getSenders().find((s) => s.track?.kind === "audio");
               if (audioSender) {
-                audioSender.replaceTrack(audioTrack);
+                audioSender.replaceTrack(audioTrack).catch((err) => {
+                  console.error(`Failed to replace audio track for peer ${id}:`, err);
+                });
               } else {
                 pc.addTrack(audioTrack, combinedStream);
               }
@@ -1914,7 +1932,7 @@
 
           const screenShareVideo = elements.screenShareOverlay.querySelector("video");
           screenShareVideo.srcObject = combinedStream;
-          screenShareVideo.muted = true;
+          screenShareVideo.muted = true; // Mute local playback to prevent feedback
           screenShareVideo.classList.remove("camera-video");
           screenShareVideo.play().catch((err) => console.error("Screen share video play failed:", err));
           elements.screenShareOverlay.classList.remove("hidden");
@@ -1938,30 +1956,44 @@
     function stopScreenShare() {
       if (!state.isScreenSharing) return;
 
+      // Stop screen share tracks
+      if (state.screenStream) {
+        state.screenStream.getTracks().forEach((track) => track.stop());
+        state.screenStream = null;
+      }
+
+      // Restore original video and audio tracks
       if (state.localStream) {
         mediaState.activeVideoTrack = state.localStream.getVideoTracks()[0] || null;
-        mediaState.activeAudioTrack = state.localStream.getAudioTracks()[0] || null;
+        mediaState.activeAudioTrack = state.originalAudioTrack || state.localStream.getAudioTracks()[0] || null;
 
         if (mediaState.activeVideoTrack) {
           mediaState.activeVideoTrack.enabled = state.isCameraOn;
           state.peers.forEach((pc, id) => {
             const videoSender = pc.getSenders().find((s) => s.track?.kind === "video");
-            if (videoSender) videoSender.replaceTrack(mediaState.activeVideoTrack);
+            if (videoSender) {
+              videoSender.replaceTrack(mediaState.activeVideoTrack).catch((err) => {
+                console.error(`Failed to restore video track for peer ${id}:`, err);
+              });
+            } else if (mediaState.activeVideoTrack) {
+              pc.addTrack(mediaState.activeVideoTrack, state.localStream);
+            }
           });
         }
+
         if (mediaState.activeAudioTrack) {
           mediaState.activeAudioTrack.enabled = state.isMicOn;
           state.peers.forEach((pc, id) => {
             const audioSender = pc.getSenders().find((s) => s.track?.kind === "audio");
-            if (audioSender) audioSender.replaceTrack(mediaState.activeAudioTrack);
-            else if (mediaState.activeAudioTrack) pc.addTrack(mediaState.activeAudioTrack, state.localStream);
+            if (audioSender) {
+              audioSender.replaceTrack(mediaState.activeAudioTrack).catch((err) => {
+                console.error(`Failed to restore audio track for peer ${id}:`, err);
+              });
+            } else if (mediaState.activeAudioTrack) {
+              pc.addTrack(mediaState.activeAudioTrack, state.localStream);
+            }
           });
         }
-      }
-
-      if (state.screenStream) {
-        state.screenStream.getTracks().forEach((track) => track.stop());
-        state.screenStream = null;
       }
 
       createVideoElement("local", userName, state.localStream, true, false);
@@ -1969,6 +2001,7 @@
       elements.screenShareOverlay.classList.add("hidden");
       state.isScreenSharing = false;
       state.screenSharingParticipant = null;
+      state.originalAudioTrack = null; // Clear stored audio track
       elements.screenShareBtn.innerHTML = '<i class="fas fa-desktop"></i>';
       showNotification("Screen sharing stopped");
 
@@ -2773,33 +2806,33 @@
       );
     }
 
- function updateParticipantList() {
-  elements.participantsList.innerHTML = "";
+    function updateParticipantList() {
+      elements.participantsList.innerHTML = "";
 
-  // Add local participant
-  addParticipant(
-    "local",
-    userName,
-    state.isHost,
-    state.isHandRaised,
-    state.screenSharingParticipant === socket.id
-  );
+      // Add local participant
+      addParticipant(
+        "local",
+        userName,
+        state.isHost,
+        state.isHandRaised,
+        state.screenSharingParticipant === socket.id
+      );
 
-  // Add remote participants
-  state.peers.forEach((_, id) => {
-    const name = state.participantNames.get(id) || "Anonymous";
-    if (!state.participantNames.has(id)) {
-      state.participantNames.set(id, name);
+      // Add remote participants
+      state.peers.forEach((_, id) => {
+        const name = state.participantNames.get(id) || "Anonymous";
+        if (!state.participantNames.has(id)) {
+          state.participantNames.set(id, name);
+        }
+        const handRaised = state.peerStreams.get(id)?.handRaised || false;
+        const isScreenSharing = state.screenSharingParticipant === id;
+        const isHost = name === state.meetingOptions.host_name || state.peers.get(id)?.isHost;
+
+        addParticipant(id, name, isHost, handRaised, isScreenSharing);
+      });
+
+      updateParticipantCount();
     }
-    const handRaised = state.peerStreams.get(id)?.handRaised || false;
-    const isScreenSharing = state.screenSharingParticipant === id;
-    const isHost = name === state.meetingOptions.host_name || state.peers.get(id)?.isHost;
-
-    addParticipant(id, name, isHost, handRaised, isScreenSharing);
-  });
-
-  updateParticipantCount();
-}
 
 
     // Leave Call
@@ -2908,7 +2941,7 @@
 
       pc.onconnectionstatechange = () => {
         if (pc.connectionState === "failed" || pc.connectionState === "disconnected") {
-          showNotification(`${state.participantNames.get(peerId)} || "A participant"}'s connection failed`);
+          showNotification(`${state.participantNames.get(peerId) || "A participant"}'s connection failed`);
           cleanupParticipant(peerId);
         }
       };
@@ -2939,8 +2972,15 @@
           event.streams[0].getTracks().forEach((track) => {
             state.peerStreams.get(peerId).addTrack(track);
           });
-          createVideoElement(peerId, state.peerStreams.get(peerId).name, state.peerStreams.get(peerId), false, state.screenSharingParticipant === peerId);
-          addParticipant(peerId, state.peerStreams.get(peerId).name, false, false, state.screenSharingParticipant === peerId);
+          // Ensure remote audio is not muted unless explicitly toggled
+          const isScreenSharing = state.screenSharingParticipant === peerId;
+          createVideoElement(peerId, state.peerStreams.get(peerId).name, state.peerStreams.get(peerId), false, isScreenSharing);
+          addParticipant(peerId, state.peerStreams.get(peerId).name, false, false, isScreenSharing);
+          const videoElement = document.getElementById(`video-${peerId}`);
+          if (videoElement && !isScreenSharing) {
+            videoElement.muted = false; // Ensure remote audio is playable
+            videoElement.play().catch((err) => console.error(`Video play failed for ${peerId}:`, err));
+          }
         }
       };
 
@@ -3001,7 +3041,7 @@
         showNotification("Error connecting to a participant");
       }
     }
-
+    
     // Cleanup Participant
     function cleanupParticipant(peerId) {
       if (state.peers.has(peerId)) {
@@ -3104,12 +3144,12 @@
         }
       });
 
-      socket.on("ishostlist",({ participantId, isHost }) => {
+      socket.on("ishostlist", ({ participantId, isHost }) => {
         if (participantId === socket.id) {
           state.isHost = isHost;
           elements.hostOptions.classList.toggle("hidden", !isHost);
           elements.meetingOptionsBtn.classList.toggle("hidden", !isHost);
-          elements.endCallBtn.classList.toggle("hidden", !isHost);
+           
         }
         const name = state.participantNames.get(participantId) || "A participant";
         showNotification(`${sanitizeInput(name)} is now ${isHost ? "the host" : "not the host"}`);
@@ -3194,7 +3234,9 @@
     }
 
     // Initialize the application
-    init();  </script>
+    init();  
+  </script>
+
 </body>
 
 </html>
