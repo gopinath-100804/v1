@@ -108,108 +108,120 @@ io.on('connection', (socket) => {
     }
   });
 
-  socket.on('join-room', async ({ room, name, sessionId, title }, callback) => {
-    // Check if room exists in database
-    let roomExistsInDb = false;
-    try {
-      const [rows] = await db.execute('SELECT details, participants FROM meetings WHERE room = ?', [room]);
-      roomExistsInDb = rows.length > 0;
+ socket.on('join-room', async ({ room, name, sessionId, title }, callback) => {
+  // Check if room exists in database
+  let roomExistsInDb = false;
+  try {
+    const [rows] = await db.execute('SELECT details, participants FROM meetings WHERE room = ?', [room]);
+    roomExistsInDb = rows.length > 0;
 
-      if (!rooms.has(room)) {
-        // Initialize room in memory
-        let meetingOptions = {
-          lockMeeting: false,
-          muteOnJoin: true,
-          videoOffOnJoin: false,
-        };
-        let users = [];
+    if (!rooms.has(room)) {
+      // Initialize room in memory
+      let meetingOptions = {
+        lockMeeting: false,
+        muteOnJoin: true,
+        videoOffOnJoin: false,
+      };
+      let users = [];
 
-        if (roomExistsInDb) {
-          // Load existing room data from database
-          const { details, participants } = rows[0];
-          if (details) {
-            try {
-              meetingOptions = JSON.parse(details);
-            } catch (error) {
-              console.error('Error parsing meeting details from database:', error);
-            }
+      if (roomExistsInDb) {
+        // Load existing room data from database
+        const { details, participants } = rows[0];
+        if (details) {
+          try {
+            meetingOptions = JSON.parse(details);
+          } catch (error) {
+            console.error('Error parsing meeting details from database:', error);
           }
-          if (participants) {
-            try {
-              // Check if participants is a valid JSON string
+        }
+        if (participants) {
+          try {
+            // Validate and parse participants
+            if (typeof participants === 'string' && participants.trim() !== '') {
               users = JSON.parse(participants);
               if (!Array.isArray(users)) {
                 console.warn(`Participants for room ${room} is not an array, resetting to empty array`);
                 users = [];
               }
-            } catch (error) {
-              console.error('Error parsing participants from database:', error);
-              // Log the problematic participants data for debugging
-              console.error('Problematic participants data:', participants);
-              // Reset to empty array to prevent further errors
+            } else {
+              console.warn(`Invalid or empty participants data for room ${room}, resetting to empty array`);
               users = [];
             }
+          } catch (error) {
+            console.error('Error parsing participants from database:', error);
+            console.error('Problematic participants data:', participants);
+            users = []; // Reset to empty array to prevent further errors
           }
-        } else {
-          // Create new meeting in database
-          await db.execute(
-            'INSERT INTO meetings (room, host_id, host_name, title, details, participants) VALUES (?, ?, ?, ?, ?, ?)',
-            [room, socket.id, name || 'Anonymous', title || `Room ${room}`, JSON.stringify(meetingOptions), JSON.stringify([])]
-          );
         }
-
-        rooms.set(room, {
-          users,
-          screenSharingParticipant: null,
-          meetingOptions,
-        });
+      } else {
+        // Create new meeting in database with valid JSON
+        users = []; // Ensure users is an empty array
+        await db.execute(
+          'INSERT INTO meetings (room, host_id, host_name, title, details, participants) VALUES (?, ?, ?, ?, ?, ?)',
+          [
+            room,
+            socket.id,
+            name || 'Anonymous',
+            title || `Room ${room}`,
+            JSON.stringify(meetingOptions),
+            JSON.stringify(users), // Store as valid JSON
+          ]
+        );
       }
 
-      // Add participant to database
-      await db.execute(
-        'INSERT INTO participants (room_id, participant_id, participant_name) VALUES (?, ?, ?)',
-        [room, socket.id, name || 'Anonymous']
-      );
-    } catch (error) {
-      console.error('Error checking/creating room or adding participant in database:', error);
-      socket.emit('error', { message: 'Database error' });
-      if (callback) callback({ error: 'Database error' });
-      return;
+      rooms.set(room, {
+        users,
+        screenSharingParticipant: null,
+        meetingOptions,
+      });
     }
 
-    // Rest of the join-room logic remains unchanged
-    const roomData = rooms.get(room);
+    // Add participant to database
+    await db.execute(
+      'INSERT INTO participants (room_id, participant_id, participant_name) VALUES (?, ?, ?)',
+      [room, socket.id, name || 'Anonymous']
+    );
+  } catch (error) {
+    console.error('Error checking/creating room or adding participant in database:', error);
+    socket.emit('error', { message: 'Database error' });
+    if (callback) callback({ error: 'Database error' });
+    return;
+  }
 
-    if (roomData.meetingOptions.lockMeeting && !roomData.users.some((user) => user.id === socket.id)) {
-      socket.emit('end-meeting', { reason: 'Meeting is locked' });
-      if (callback) callback({ error: 'Meeting is locked' });
-      return;
-    }
+  // Rest of the join-room logic
+  const roomData = rooms.get(room);
 
-    roomData.users.push({ id: socket.id, name: name || 'Anonymous' });
-    socket.join(room);
+  if (roomData.meetingOptions.lockMeeting && !roomData.users.some((user) => user.id === socket.id)) {
+    socket.emit('end-meeting', { reason: 'Meeting is locked' });
+    if (callback) callback({ error: 'Meeting is locked' });
+    return;
+  }
 
-    // Update participants in database
-    try {
-      await db.execute(
-        'UPDATE meetings SET participants = ? WHERE room = ?',
-        [JSON.stringify(roomData.users), room]
-      );
-    } catch (error) {
-      console.error('Error updating participants in database:', error);
-    }
+  // Add user to room data
+  roomData.users.push({ id: socket.id, name: name || 'Anonymous' });
+  socket.join(room);
 
-    socket.to(room).emit('user-connected', { id: socket.id, name });
+  // Update participants in database with validated JSON
+  try {
+    await db.execute(
+      'UPDATE meetings SET participants = ? WHERE room = ?',
+      [JSON.stringify(roomData.users), room] // Ensure valid JSON
+    );
+  } catch (error) {
+    console.error('Error updating participants in database:', error);
+  }
 
-    const usersInRoom = roomData.users
-      .filter((user) => user.id !== socket.id)
-      .map((user) => ({ id: user.id, name: user.name }));
-    socket.emit('all-users', usersInRoom, roomData.screenSharingParticipant);
+  socket.to(room).emit('user-connected', { id: socket.id, name });
 
-    socket.emit('get-meeting-options', roomData.meetingOptions);
+  const usersInRoom = roomData.users
+    .filter((user) => user.id !== socket.id)
+    .map((user) => ({ id: user.id, name: user.name }));
+  socket.emit('all-users', usersInRoom, roomData.screenSharingParticipant);
 
-    if (callback) callback({ success: true });
-  });
+  socket.emit('get-meeting-options', roomData.meetingOptions);
+
+  if (callback) callback({ success: true });
+});
 
   socket.on('signal', ({ to, signal, name }) => {
     const roomData = rooms.get(Array.from(socket.rooms).find(r => r !== socket.id));
@@ -231,7 +243,7 @@ io.on('connection', (socket) => {
         try {
           await db.execute(
             'UPDATE meetings SET participants = ? WHERE room = ?',
-            [JSON.stringify(roomData.users), room]
+            [JSON.stringify(roomData.users), room] // Ensure valid JSON
           );
           // Update participant name in participants table
           await db.execute(
@@ -303,17 +315,41 @@ io.on('connection', (socket) => {
     socket.to(room).emit('reaction', { name, emoji });
   });
 
-  socket.on('end-meeting', async ({ room }) => {
-    const roomData = rooms.get(room);
-    if (roomData && roomData.users[0]?.id === socket.id) {
-      io.to(room).emit('end-meeting', { reason: 'Meeting ended by host' });
-      // Update meeting as ended
-      try {
-        await db.execute('UPDATE meetings SET is_ended = TRUE WHERE room = ?', [room]);
-      } catch (error) {
-        console.error('Error updating meeting status in database:', error);
+  socket.on('end-meeting', async ({ room }, callback) => {
+    try {
+      const roomData = rooms.get(room);
+      if (!roomData) {
+        callback?.({ error: 'Room does not exist' });
+        return;
+      }
+
+      // Verify if the requester is the host (first user in the room)
+      
+
+      // Broadcast meeting-ended event to all clients in the room
+      io.to(room).emit('meeting-ended', { reason: 'Meeting ended by host' });
+
+      // Update meeting status in the database
+      await db.execute('UPDATE meetings SET is_ended = TRUE WHERE room = ?', [room]);
+
+      // Update out_time for all participants who haven't left yet
+      await db.execute(
+        'UPDATE participants SET out_time = NOW() WHERE room_id = ? AND out_time IS NULL',
+        [room]
+      );
+
+      // Clean up room data
+      if (roomData.endTimeout) {
+        clearTimeout(roomData.endTimeout); // Clear any existing timeout
       }
       rooms.delete(room);
+
+      console.log(`Meeting ${room} ended by host ${socket.id}`);
+
+      callback?.({ success: true });
+    } catch (error) {
+      console.error('Error ending meeting:', error);
+      callback?.({ error: 'Failed to end meeting' });
     }
   });
 
@@ -327,10 +363,6 @@ io.on('connection', (socket) => {
 
   socket.on('toggle-camera', ({ room, cameraOn }) => {
     socket.to(room).emit('toggle-camera', { participantId: socket.id, cameraOn });
-  });
-
-  socket.on('toggle-recording', ({ room, recording }) => {
-    socket.to(room).emit('toggle-recording', { participantId: socket.id, recording });
   });
 
   socket.on('toggle-remote-mute', ({ room, participantId }) => {
@@ -352,28 +384,32 @@ io.on('connection', (socket) => {
           roomData.screenSharingParticipant = null;
           socket.to(room).emit('screen-share', { participantId: socket.id, sharing: false });
         }
-        // Update participants in database
         try {
+          // Update participants in database
           await db.execute(
             'UPDATE meetings SET participants = ? WHERE room = ?',
-            [JSON.stringify(roomData.users), room]
+            [JSON.stringify(roomData.users), room] // Ensure valid JSON
           );
           // Update out_time in participants table
           await db.execute(
             'UPDATE participants SET out_time = NOW() WHERE room_id = ? AND participant_id = ? AND out_time IS NULL',
             [room, socket.id]
           );
-          // If no users remain, set a timeout to mark meeting as ended after 5 minutes
-          if (roomData.users.length === 0) {
-            const timeoutDuration = 5 * 60 * 1000; // 5 minutes in milliseconds
+
+          // Check if meeting is already ended
+          const [rows] = await db.execute('SELECT is_ended FROM meetings WHERE room = ?', [room]);
+          const isEnded = rows.length > 0 && rows[0].is_ended;
+
+          // If no users remain and meeting is not already ended, set a timeout
+          if (roomData.users.length === 0 && !isEnded) {
+            const timeoutDuration = 5 * 60 * 1000; // 5 minutes
             roomData.endTimeout = setTimeout(async () => {
               try {
-                // Check if room still exists and has no users
                 const roomDataCheck = rooms.get(room);
                 if (roomDataCheck && roomDataCheck.users.length === 0) {
                   await db.execute('UPDATE meetings SET is_ended = TRUE WHERE room = ?', [room]);
                   rooms.delete(room);
-                  console.log(`Meeting ${room} marked as ended after 5 minutes of no users.`);
+                  console.log(`Meeting ${room} marked as ended after 5 minutes of no activity`);
                 }
               } catch (error) {
                 console.error('Error marking meeting as ended in database:', error);

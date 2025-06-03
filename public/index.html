@@ -231,6 +231,7 @@
     }
 
     @keyframes typingAnimation {
+
       0%,
       60%,
       100% {
@@ -371,8 +372,8 @@
       </div>
       <div class="mb-4">
         <label class="block text-sm font-medium mb-1">Meeting Title</label>
-        <input type="text" class="w-full bg-gray-700 border border-gray-600 rounded px-3 py-2"
-          id="new-meeting-title" placeholder="Enter meeting title">
+        <input type="text" class="w-full bg-gray-700 border border-gray-600 rounded px-3 py-2" id="new-meeting-title"
+          placeholder="Enter meeting title">
       </div>
       <div class="flex justify-end space-x-2">
         <button class="px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded" id="cancel-new-meeting">Cancel</button>
@@ -453,12 +454,6 @@
         <input type="text" class="w-full bg-gray-700 border border-gray-600 rounded px-3 py-2 disabled-input"
           id="participant-name" readonly aria-disabled="true">
       </div>
-      <div class="mb-4">
-        <label class="flex items-center space-x-2">
-          <input type="checkbox" class="rounded bg-gray-700 border-gray-600" id="join-with-video" checked>
-          <span>Join with video</span>
-        </label>
-      </div>
       <div class="flex justify-end space-x-2">
         <button class="px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded" id="cancel-join">Cancel</button>
         <button class="px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded button-loading" id="confirm-join">
@@ -478,8 +473,9 @@
     </div>
   </div>
 
-  <script src="/socket.io/socket.io.js"></script>
   <script src="/meet/socket.io/socket.io.js"></script>
+  <script src="/socket.io/socket.io.js"></script>
+
 
   <script>
     const path = window.location.pathname.startsWith('/meet/') ? '/meet/socket.io' : '/socket.io';
@@ -754,7 +750,7 @@
           sessionStorage.setItem('sessionUsername', sessionUsername);
           joinMeetingModal.classList.add('hidden');
           window.location.href = `./meeting.html?room=${encodeURIComponent(room)}`;
-          
+
         }
 
         else {
@@ -764,7 +760,7 @@
           loader.classList.add('hidden');
           return;
         }
-        
+
         socket.emit('join-room', { room, name: sessionUsername, sessionId }, (response) => {
           clearTimeout(timeoutId); // Clear timeout on response
           button.disabled = false;
@@ -776,7 +772,7 @@
             window.location.href = '../contents/admin/login.php';
             return;
           }
-          
+
         });
       });
     }

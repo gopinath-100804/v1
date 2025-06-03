@@ -37,7 +37,6 @@
     .video-main {
       flex: 1;
       max-height: 70vh;
-      /* Adjust based on preference */
       width: 100%;
       background-color: #1a202c;
       border-radius: 8px;
@@ -56,16 +55,12 @@
       flex-wrap: wrap;
       overflow-x: auto;
       max-height: 20vh;
-      /* Adjust to fit secondary videos */
       width: 100%;
       padding: 0.5rem 0;
     }
 
-
-
     .participant-tile {
       width: 150px;
-      /* Fixed width for secondary videos */
       min-width: 150px;
       background-color: #1a202c;
       border-radius: 8px;
@@ -194,8 +189,7 @@
       padding: 0.2rem 0.5rem;
       border-radius: 4px;
       font-size: 12px;
-      z-index: 2;
-    }
+     }
 
     /* Participant controls styling */
     .participant-controls {
@@ -463,7 +457,6 @@
       position: relative;
       width: 100%;
       padding-bottom: 56.25%;
-      /* 16:9 aspect ratio */
     }
 
     .video-wrapper video {
@@ -509,6 +502,35 @@
       z-index: 10;
     }
 
+    /* Host name and badge styling */
+    #hostdis {
+      display: inline-block;
+      font-size: 12px;
+      color: #e5e7eb;
+      background-color: rgba(0, 0, 0, 0.5);
+      padding: 0.2rem 0.5rem;
+      border-radius: 4px;
+      margin-left: 0.5rem;
+    }
+
+    #ishostt {
+      display: none;
+      align-items: center;
+      font-size: 10px;
+      background-color: #3b82f6;
+      color: white;
+      padding: 0.2rem 0.5rem;
+      border-radius: 4px;
+  
+    }
+
+    /* Confirmation modal */
+    .confirmation-modal {
+      animation: modalFadeIn 0.3s ease-out;
+      width: 90%;
+      max-width: 400px;
+    }
+
     /* Mobile-specific styles */
     @media (max-width: 640px) {
       .logo-text {
@@ -526,6 +548,16 @@
 
       #meeting-title {
         font-size: 0.75rem;
+      }
+
+      #hostdis {
+        font-size: 10px;
+        padding: 0.15rem 0.3rem;
+      }
+
+      #ishostt {
+        font-size: 8px;
+        padding: 0.15rem 0.3rem;
       }
 
       .flex.items-center.justify-between.mb-4 {
@@ -578,15 +610,18 @@
         font-size: 0.65rem;
       }
 
-      .invite-friends-modal {
+      .invite-friends-modal,
+      .confirmation-modal {
         padding: 0.5rem;
       }
 
-      .invite-friends-modal h2 {
+      .invite-friends-modal h2,
+      .confirmation-modal h2 {
         font-size: 0.875rem;
       }
 
-      .invite-friends-modal input {
+      .invite-friends-modal input,
+      .confirmation-modal input {
         font-size: 0.65rem;
       }
 
@@ -616,10 +651,14 @@
         width: 50vw;
         max-width: 350px;
       }
-    }
 
-    #ishostt, #end-call-btn {
-      visibility: hidden;
+      #hostdis {
+        font-size: 11px;
+      }
+
+      #ishostt {
+        font-size: 9px;
+      }
     }
   </style>
 </head>
@@ -643,16 +682,10 @@
         </div>
       </div>
       <div class="flex items-center space-x-4">
-        <button class="hidden md:flex items-center space-x-1 text-sm bg-gray-700 hover:bg-gray-600 px-3 py-1 rounded"
-          id="security-btn">
-          <i class="fas fa-shield-alt text-green-400"></i>
-          <span>Security</span>
-        </button>
-        <button class="hidden md:flex items-center space-x-1 text-sm bg-gray-700 hover:bg-gray-600 px-3 py-1 rounded"
-          id="settings-btn">
-          <i class="fas fa-cog"></i>
-          <span>Settings</span>
-        </button>
+        <button class="hidden md:flex items-center space-x-1 text-sm bg-gray-700 hover:bg-gray-600 px-3 py-1 rounded" id="meeting-options">
+  <i class="fas fa-cog"></i>
+  <span>Settings</span>
+</button>
         <button class="md:flex items-center space-x-1 text-sm bg-red-500 hover:bg-red-600 px-3 py-1 rounded"
           id="end-call-btn">
           <i class="fas fa-phone-slash"></i>
@@ -669,6 +702,7 @@
           <span class="text-sm text-gray-300">Meeting:</span>
           <span class="font-medium text-sm" id="meeting-title">Creative Review</span>
           <span class="text-xs bg-blue-500 text-white px-2 py-1 rounded-full" id="ishostt">Host</span>
+          <span class="text-xs text-gray-300 px-2 py-1" id="hostdis"></span> <!-- Updated for clarity -->
         </div>
         <div class="flex items-center space-x-2">
           <button class="text-xs bg-gray-700 hover:bg-gray-600 px-2 py-1 rounded" id="participants-toggle">
@@ -714,9 +748,6 @@
         <div class="flex items-center space-x-2">
           <button class="p-2 rounded-full bg-gray-700 hover:bg-gray-600" id="raise-hand-btn">
             <i class="fas fa-hand-paper"></i>
-          </button>
-          <button class="p-2 rounded-full bg-gray-700 hover:bg-gray-600" id="record-btn">
-            <i class="fas fa-circle text-gray-400"></i>
           </button>
           <button class="p-2 rounded-full bg-red-500 hover:bg-red-600" id="leave-call-btn">
             <i class="fas fa-phone-slash"></i>
@@ -785,9 +816,6 @@
         </div>
         <div class="mt-auto">
           <div class="flex space-x-1">
-            <button class="p-1 rounded-full hover:bg-gray-700" id="attach-file-btn">
-              <i class="fas fa-paperclip text-sm"></i>
-            </button>
             <input type="text" placeholder="Type a message"
               class="flex-1 bg-gray-700 border border-gray-600 rounded-full px-3 py-1 text-sm" id="chat-input" />
             <button class="p-1 rounded-full hover:bg-gray-700" id="emoji-picker-btn">
@@ -821,7 +849,7 @@
   </div>
 
   <!-- Reactions Popup -->
-  <div class="fixed bottom-20 right-2 bg-gray-800 rounded-lg shadow-lg p-2 hidden" id="reactions-popup">
+  <div class="fixed bottom-20 left-20 bg-gray-800 rounded-lg shadow-lg p-2 hidden" id="reactions-popup">
     <div class="grid grid-cols-4 gap-1">
       <button class="p-1 rounded-full hover:bg-gray-700 reaction-emoji" data-emoji="👍">
         <span class="text-lg">👍</span>
@@ -858,10 +886,6 @@
         <i class="fas fa-cog mr-2 text-sm"></i> Settings
       </button>
       <button class="w-full text-left px-2 py-1 hover:bg-gray-600 rounded flex items-center text-sm"
-        id="meeting-options">
-        <i class="fas fa-user-shield mr-2 text-sm"></i> Meeting options
-      </button>
-      <button class="w-full text-left px-2 py-1 hover:bg-gray-600 rounded flex items-center text-sm"
         id="captions-option">
         <i class="fas fa-closed-captioning mr-2 text-sm"></i> Turn on captions
       </button>
@@ -880,7 +904,7 @@
     </div>
   </div>
   <!-- Virtual Background Popup -->
-  <div class="fixed bottom-20 left-2 bg-gray-800 rounded-lg shadow-lg p-2 hidden w-64" id="virtual-background-popup">
+  <div class="fixed bottom-20 left-10 bg-gray-800 rounded-lg shadow-lg p-2 hidden w-64" id="virtual-background-popup">
     <h3 class="font-medium text-sm mb-2">Virtual Background</h3>
     <div class="grid grid-cols-3 gap-1 mb-2">
       <button class="p-1 bg-gray-700 hover:bg-gray-600 rounded flex flex-col items-center" data-background="none">
@@ -1008,6 +1032,28 @@
     <span id="notification-message"></span>
   </div>
 
+  <!-- Confirmation Modal -->
+<div class="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 hidden" id="confirmation-modal">
+  <div class="bg-gray-800 rounded-lg p-4 w-full max-w-md confirmation-modal">
+    <div class="flex justify-between items-center mb-3">
+      <h2 class="text-lg font-bold" id="confirmation-title">Confirm Action</h2>
+      <button class="text-gray-400 hover:text-white" id="close-confirmation-modal">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+    <p class="text-sm mb-4" id="confirmation-message"></p>
+    <div class="flex justify-end space-x-2">
+      <button class="px-3 py-1 bg-gray-700 hover:bg-gray-600 rounded text-sm" id="confirmation-cancel">
+        Cancel
+      </button>
+      <button class="px-3 py-1 bg-blue-600 hover:bg-blue-700 rounded text-sm" id="confirmation-confirm">
+        Confirm
+      </button>
+    </div>
+  </div>
+</div>
+
+
   <script src="/meet/socket.io/socket.io.js"></script>
   <script src="/socket.io/socket.io.js"></script>
 
@@ -1074,6 +1120,7 @@
 
     // DOM Elements
     const elements = {
+      // ... other elements ...
       meetingScreen: document.getElementById("meeting-screen"),
       homeButton: document.getElementById("home-button"),
       meetingIdDisplay: document.getElementById("meeting-id"),
@@ -1083,8 +1130,8 @@
       micToggle: document.getElementById("mic-toggle"),
       cameraToggle: document.getElementById("camera-toggle"),
       screenShareBtn: document.getElementById("screen-share-btn"),
+      meetingOptions: document.getElementById("meeting-options"),
       raiseHandBtn: document.getElementById("raise-hand-btn"),
-      recordBtn: document.getElementById("record-btn"),
       leaveCallBtn: document.getElementById("leave-call-btn"),
       endCallBtn: document.getElementById("end-call-btn"),
       moreOptionsBtn: document.getElementById("more-options-btn"),
@@ -1130,6 +1177,7 @@
       closeUsernameModal: document.getElementById("close-username-modal"),
       usernameInput: document.getElementById("username-input"),
       submitUsername: document.getElementById("submit-username"),
+      hostdis: document.getElementById("hostdis"), // Added for host name display
     };
 
     // State Management
@@ -1143,7 +1191,6 @@
       isHost: false,
       isReactionsPopupOpen: false,
       isHandRaised: false,
-      isRecording: false,
       isSidebarOpen: false,
       activeTab: "participants",
       isHost: false,
@@ -1190,6 +1237,8 @@
 
         userName = sessionData.username;
         const ishostname = sessionData.meeting.host_name;
+        state.hostnames = ishostname;
+
         state.participantNames.set("local", sanitizeInput(userName));
         state.connectedUsers.add(socket.id);
 
@@ -1197,10 +1246,19 @@
         state.meetingOptions.host_name = ishostname;
         state.isHost = ishostname === userName;
 
+        hostdisplay = document.getElementById("hostdis");
         if (state.isHost) {
-          document.getElementById("end-call-btn").style.visibility = "visible";
-          document.getElementById("ishostt").style.visibility = "visible"; // Show host badge in UI
+          hostdisplay.textContent = `Host: ${sessionData.meeting.host_name}`;
         }
+
+        if (state.isHost) {
+          document.getElementById("end-call-btn").style.display = "flex"; // Show end call button for host
+          document.getElementById("ishostt").style.display = "flex";; // Show host badge in UI
+        }
+
+        // Display host name for all participants
+        elements.hostdis.textContent = `Host: ${sanitizeInput(ishostname)}`;
+        elements.hostdis.style.display = "inline"; // Ensure visibility
 
         sessionStorage.setItem('videoEnabled', mediaState.videoEnabled);
         sessionStorage.setItem('audioEnabled', mediaState.audioEnabled);
@@ -1250,107 +1308,107 @@
     }
 
     // Setup Meeting
-    function setupMeeting() {
-      elements.meetingIdDisplay.textContent = room;
-      updateMeetingLink();
+function setupMeeting() {
+  elements.meetingIdDisplay.textContent = room;
+  updateMeetingLink();
 
-      // Event Listeners
-      elements.homeButton.addEventListener("click", returnToHomeScreen);
-      elements.copyMeetingId.addEventListener("click", copyMeetingLinkToClipboard);
-      elements.micToggle.addEventListener("click", toggleMic);
-      elements.cameraToggle.addEventListener("click", toggleCamera);
-      elements.screenShareBtn.addEventListener("click", toggleScreenShare);
-      elements.raiseHandBtn.addEventListener("click", toggleRaiseHand);
-      elements.recordBtn.addEventListener("click", toggleRecording);
-      elements.leaveCallBtn.addEventListener("click", leaveCall);
-      elements.endCallBtn.addEventListener("click", endCall);
-      elements.moreOptionsBtn.addEventListener("click", toggleMoreOptions);
-      elements.reactionsBtn.addEventListener("click", toggleReactionsPopup);
-      elements.virtualBackgroundBtn.addEventListener("click", toggleVirtualBackgroundPopup);
-      elements.closeSidebarBtn.addEventListener("click", toggleSidebar);
-      elements.participantsToggle.addEventListener("click", () => {
-        toggleSidebar();
-        showTab("participants");
-      });
-      elements.chatToggle.addEventListener("click", () => {
-        toggleSidebar();
-        showTab("chat");
-      });
-      elements.inviteButton.addEventListener("click", showInviteFriendsModal);
-      elements.copyMeetingLinkSidebar.addEventListener("click", copyMeetingLinkToClipboard);
-      elements.sendInvite.addEventListener("click", sendEmailInvites);
-      elements.closeInviteModal.addEventListener("click", hideInviteFriendsModal);
-      elements.copyMeetingLink.addEventListener("click", copyMeetingLinkToClipboard);
-      elements.sendInvitesBtn.addEventListener("click", sendEmailInvites);
-      elements.shareWhatsapp.addEventListener("click", shareViaWhatsapp);
-      elements.shareEmail.addEventListener("click", shareViaEmail);
-      elements.shareSms.addEventListener("click", shareViaSms);
-      elements.shareCopy.addEventListener("click", copyMeetingLinkToClipboard);
+  // Event Listeners
+  elements.homeButton.addEventListener("click", returnToHomeScreen);
+  elements.copyMeetingId.addEventListener("click", copyMeetingLinkToClipboard);
+  elements.micToggle.addEventListener("click", toggleMic);
+  elements.cameraToggle.addEventListener("click", toggleCamera);
+  elements.screenShareBtn.addEventListener("click", toggleScreenShare);
+  elements.raiseHandBtn.addEventListener("click", toggleRaiseHand);
+  elements.leaveCallBtn.addEventListener("click", leaveCall);
+  elements.endCallBtn.addEventListener("click", endCall);
+  elements.moreOptionsBtn.addEventListener("click", toggleMoreOptions);
+  elements.reactionsBtn.addEventListener("click", toggleReactionsPopup);
+  elements.virtualBackgroundBtn.addEventListener("click", toggleVirtualBackgroundPopup);
+  elements.closeSidebarBtn.addEventListener("click", toggleSidebar);
+  elements.participantsToggle.addEventListener("click", () => {
+    toggleSidebar();
+    showTab("participants");
+  });
+  elements.chatToggle.addEventListener("click", () => {
+    toggleSidebar();
+    showTab("chat");
+  });
+  elements.inviteButton.addEventListener("click", showInviteFriendsModal);
+  elements.copyMeetingLinkSidebar.addEventListener("click", copyMeetingLinkToClipboard);
+  elements.sendInvite.addEventListener("click", sendEmailInvites);
+  elements.closeInviteModal.addEventListener("click", hideInviteFriendsModal);
+  elements.copyMeetingLink.addEventListener("click", copyMeetingLinkToClipboard);
+  elements.sendInvitesBtn.addEventListener("click", sendEmailInvites);
+  elements.shareWhatsapp.addEventListener("click", shareViaWhatsapp);
+  elements.shareEmail.addEventListener("click", shareViaEmail);
+  elements.shareSms.addEventListener("click", shareViaSms);
+  elements.shareCopy.addEventListener("click", copyMeetingLinkToClipboard);
+  elements.meetingOptions.addEventListener("click", showMeetingOptionsModal); // Added listener
 
-      elements.sidebarTabs.querySelectorAll("button").forEach((button) => {
-        button.addEventListener("click", () => {
-          showTab(button.getAttribute("data-tab"));
-        });
-      });
+  elements.sidebarTabs.querySelectorAll("button").forEach((button) => {
+    button.addEventListener("click", () => {
+      showTab(button.getAttribute("data-tab"));
+    });
+  });
 
-      elements.stopScreenShareBtn.addEventListener("click", stopScreenShare);
-      elements.minimizeScreenShareBtn.addEventListener("click", () => {
-        elements.screenShareOverlay.classList.add("hidden");
-      });
+  elements.stopScreenShareBtn.addEventListener("click", stopScreenShare);
+  elements.minimizeScreenShareBtn.addEventListener("click", () => {
+    elements.screenShareOverlay.classList.add("hidden");
+  });
 
-      document.querySelectorAll(".reaction-emoji").forEach((button) => {
-        button.addEventListener("click", () => {
-          const emoji = button.getAttribute("data-emoji");
-          sendReaction(emoji);
-          elements.reactionsPopup.classList.add("hidden");
-        });
-      });
+  document.querySelectorAll(".reaction-emoji").forEach((button) => {
+    button.addEventListener("click", () => {
+      const emoji = button.getAttribute("data-emoji");
+      sendReaction(emoji);
+      elements.reactionsPopup.classList.add("hidden");
+    });
+  });
 
-      document.addEventListener("click", (e) => {
-        if (
-          !elements.moreOptionsBtn.contains(e.target) &&
-          !elements.moreOptionsPopup.contains(e.target)
-        ) {
-          elements.moreOptionsPopup.classList.add("hidden");
-        }
-        if (
-          !elements.reactionsBtn.contains(e.target) &&
-          !elements.reactionsPopup.contains(e.target)
-        ) {
-          elements.reactionsPopup.classList.add("hidden");
-        }
-        if (
-          !elements.virtualBackgroundBtn.contains(e.target) &&
-          !elements.virtualBackgroundPopup.contains(e.target)
-        ) {
-          elements.virtualBackgroundPopup.classList.add("hidden");
-        }
-      });
-
-      elements.chatInput.addEventListener("keypress", (e) => {
-        if (e.key === "Enter" && !e.shiftKey) {
-          e.preventDefault();
-          sendChatMessage();
-        }
-      });
-      elements.sendMessageBtn.addEventListener("click", sendChatMessage);
-      elements.sendReactionBtn.addEventListener("click", () => sendReaction("❤️"));
-
-      let typingTimeout = null;
-      elements.chatInput.addEventListener("input", () => {
-        if (!typingTimeout) {
-          socket.emit("typing", { room, name: userName });
-          typingTimeout = setTimeout(() => {
-            socket.emit("stop-typing", { room, name: userName });
-            typingTimeout = null;
-          }, 2000);
-        }
-      });
-
-      setupMoreOptions();
-      state.cleanupInterval = setInterval(cleanupStaleVideos, 2000);
-      startMeeting();
+  document.addEventListener("click", (e) => {
+    if (
+      !elements.moreOptionsBtn.contains(e.target) &&
+      !elements.moreOptionsPopup.contains(e.target)
+    ) {
+      elements.moreOptionsPopup.classList.add("hidden");
     }
+    if (
+      !elements.reactionsBtn.contains(e.target) &&
+      !elements.reactionsPopup.contains(e.target)
+    ) {
+      elements.reactionsPopup.classList.add("hidden");
+    }
+    if (
+      !elements.virtualBackgroundBtn.contains(e.target) &&
+      !elements.virtualBackgroundPopup.contains(e.target)
+    ) {
+      elements.virtualBackgroundPopup.classList.add("hidden");
+    }
+  });
+
+  elements.chatInput.addEventListener("keypress", (e) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      sendChatMessage();
+    }
+  });
+  elements.sendMessageBtn.addEventListener("click", sendChatMessage);
+  elements.sendReactionBtn.addEventListener("click", () => sendReaction("❤️"));
+
+  let typingTimeout = null;
+  elements.chatInput.addEventListener("input", () => {
+    if (!typingTimeout) {
+      socket.emit("typing", { room, name: userName });
+      typingTimeout = setTimeout(() => {
+        socket.emit("stop-typing", { room, name: userName });
+        typingTimeout = null;
+      }, 2000);
+    }
+  });
+
+  setupMoreOptions();
+  state.cleanupInterval = setInterval(cleanupStaleVideos, 2000);
+  startMeeting();
+}
 
     // Update Meeting Link
     function updateMeetingLink() {
@@ -1609,7 +1667,7 @@
       if ((state.isHost) || state.participantNames.get(participantId) === state.meetingOptions.host_name) {
         const hostBadge = document.getElementById("ishostt");
         if (hostBadge) {
-          hostBadge.style.visibility = "visible";
+          hostBadge.style.display = "flex"; // Show host badge in UI
           const hostBadgeElement = document.createElement("span");
 
         }
@@ -2013,7 +2071,6 @@
     // Setup More Options
     function setupMoreOptions() {
       const settingsOption = elements.moreOptionsPopup.querySelector("#settings-option");
-      const meetingOptions = elements.moreOptionsPopup.querySelector("#meeting-options");
       const captionsOption = elements.moreOptionsPopup.querySelector("#captions-option");
       const languageOption = elements.moreOptionsPopup.querySelector("#language-option");
       const fullscreenOption = elements.moreOptionsPopup.querySelector("#fullscreen-option");
@@ -2022,11 +2079,6 @@
       settingsOption.addEventListener("click", () => {
         elements.moreOptionsPopup.classList.add("hidden");
         showSettingsModal();
-      });
-
-      meetingOptions.addEventListener("click", () => {
-        elements.moreOptionsPopup.classList.add("hidden");
-        showMeetingOptionsModal();
       });
 
       captionsOption.addEventListener("click", () => {
@@ -2049,7 +2101,6 @@
         toggleFullScreen();
       });
     }
-
     // Show Settings Modal
     function showSettingsModal() {
       let settingsModal = document.getElementById("settings-modal");
@@ -2129,6 +2180,47 @@
       elements.meetingScreen.classList.add("blur-background");
       settingsModal.querySelector("#settings-username").focus();
     }
+
+    function showConfirmationModal(title, message, onConfirm) {
+  const modal = document.getElementById("confirmation-modal");
+  const titleElement = document.getElementById("confirmation-title");
+  const messageElement = document.getElementById("confirmation-message");
+  const confirmButton = document.getElementById("confirmation-confirm");
+  const cancelButton = document.getElementById("confirmation-cancel");
+  const closeButton = document.getElementById("close-confirmation-modal");
+
+  titleElement.textContent = title;
+  messageElement.textContent = message;
+
+  // Remove existing listeners to prevent duplicates
+  const newConfirmButton = confirmButton.cloneNode(true);
+  confirmButton.parentNode.replaceChild(newConfirmButton, confirmButton);
+  const newCancelButton = cancelButton.cloneNode(true);
+  cancelButton.parentNode.replaceChild(newCancelButton, cancelButton);
+  const newCloseButton = closeButton.cloneNode(true);
+  closeButton.parentNode.replaceChild(newCloseButton, closeButton);
+
+  // Add new listeners
+  newConfirmButton.addEventListener("click", () => {
+    modal.classList.add("hidden");
+    elements.meetingScreen.classList.remove("blur-background");
+    onConfirm();
+  });
+
+  newCancelButton.addEventListener("click", () => {
+    modal.classList.add("hidden");
+    elements.meetingScreen.classList.remove("blur-background");
+  });
+
+  newCloseButton.addEventListener("click", () => {
+    modal.classList.add("hidden");
+    elements.meetingScreen.classList.remove("blur-background");
+  });
+
+  modal.classList.remove("hidden");
+  elements.meetingScreen.classList.add("blur-background");
+  newConfirmButton.focus();
+}
 
     // Show Caption Language Modal
     function showCaptionLanguageModal() {
@@ -2551,14 +2643,6 @@
       updateParticipantList();
     }
 
-    // Toggle Recording
-    function toggleRecording() {
-      state.isRecording = !state.isRecording;
-      elements.recordBtn.innerHTML = `<i class="fas fa-circle ${state.isRecording ? "text-red-500" : "text-gray-400"}"></i>`;
-      showNotification(state.isRecording ? "Recording started" : "Recording stopped");
-      socket.emit("toggle-recording", { room, recording: state.isRecording });
-    }
-
     // Toggle Sidebar
     function toggleSidebar() {
       state.isSidebarOpen = !state.isSidebarOpen;
@@ -2837,30 +2921,53 @@
 
     // Leave Call
     function leaveCall() {
-      if (confirm("Are you sure you want to leave the meeting?")) {
-        cleanup();
-        window.location.href = "./";
-      }
+  showConfirmationModal(
+    "Leave Meeting",
+    "Are you sure you want to leave the meeting?",
+    () => {
+      cleanup();
+      window.location.href = "./";
     }
+  );
+}
 
-    // End Call
     function endCall() {
-      if (confirm("Are you sure you want to end the meeting for everyone?")) {
-        socket.emit("end-meeting", { room }, (response) => {
-          if (response && response.error) {
-            showNotification(response.error);
-          }
-        });
-      }
+  if (!state.isHost) {
+    showNotification("Only the host can end the meeting");
+    return;
+  }
+
+  showConfirmationModal(
+    "End Meeting",
+    "Are you sure you want to end the meeting for everyone?",
+    () => {
+      socket.emit("end-meeting", { room }, (response) => {
+        if (response && response.error) {
+          showNotification(response.error);
+        } else {
+          showNotification("Meeting ended for everyone");
+          cleanup();
+          setTimeout(() => {
+            window.location.href = "./";
+          }, 2000);
+        }
+      });
     }
+  );
+}
+
 
     // Return to Home Screen
     function returnToHomeScreen() {
-      if (confirm("Are you sure you want to leave the meeting?")) {
-        cleanup();
-        window.location.href = "./";
-      }
+  showConfirmationModal(
+    "Leave Meeting",
+    "Are you sure you want to leave the meeting?",
+    () => {
+      cleanup();
+      window.location.href = "./";
     }
+  );
+}
 
     // Cleanup Resources
     function cleanup() {
@@ -3041,7 +3148,7 @@
         showNotification("Error connecting to a participant");
       }
     }
-    
+
     // Cleanup Participant
     function cleanupParticipant(peerId) {
       if (state.peers.has(peerId)) {
@@ -3065,173 +3172,168 @@
     }
 
     // Setup Socket Events
-    function setupSocketEvents() {
-      socket.on("connect", () => {
-        state.connectedUsers.add(socket.id);
-        socket.emit("join-room", { room, name: userName });
-      });
+   function setupSocketEvents() {
+  socket.on("connect", () => {
+    state.connectedUsers.add(socket.id);
+    socket.emit("join-room", { room, name: userName });
+  });
 
-      socket.on("user-connected", ({ id, name, isHost }) => {
-        if (id === socket.id) return;
-        state.connectedUsers.add(id);
-        state.participantNames.set(id, sanitizeInput(name || "Anonymous"));
-        const pc = createPeerConnection(id, name, true);
-        addParticipant(id, name, isHost, false); // Pass isHost directly
-        showNotification(`${sanitizeInput(name)} joined the meeting`);
-      });
+  socket.on("user-connected", ({ id, name, isHost }) => {
+    if (id === socket.id) return;
+    state.connectedUsers.add(id);
+    state.participantNames.set(id, sanitizeInput(name || "Anonymous"));
+    const pc = createPeerConnection(id, name, true);
+    addParticipant(id, name, isHost);
+    showNotification(`${sanitizeInput(name)} joined the meeting`);
+  });
 
-      socket.on("user-disconnected", (id) => {
-        if (id === socket.id) return;
-        const participantName = state.participantNames.get(id) || "Anonymous";
-        state.typingUsers.delete(participantName);
-        state.connectedUsers.delete(id);
-        renderChatMessages();
-        if (state.screenSharingParticipant === id) {
-          state.screenSharingParticipant = null;
-          elements.screenShareOverlay.classList.add("hidden");
-        }
-        showNotification(`${participantName} has left the meeting`);
-        cleanupParticipant(id);
-      });
-
-      socket.on("signal", handleSignal);
-
-      socket.on("toggle-mic", ({ id, micOn }) => {
-        const videoContainer = document.getElementById(`video-container-${id}`);
-        if (videoContainer) {
-          const video = videoContainer.querySelector("video");
-          if (video && !micOn) {
-            video.muted = true; // Ensure remote audio is muted if mic is off
-          }
-        }
-        updateParticipantList();
-      });
-
-      socket.on("toggle-camera", ({ id, cameraOn }) => {
-        const videoContainer = document.getElementById(`video-container-${id}`);
-        if (videoContainer) {
-          const video = videoContainer.querySelector("video");
-          if (video && !cameraOn) {
-            video.srcObject.getVideoTracks().forEach((track) => (track.enabled = false));
-          }
-        }
-        updateParticipantList();
-      });
-
-      socket.on("screen-share", ({ sharing, participantId }) => {
-        state.screenSharingParticipant = sharing ? participantId : null;
-        if (!sharing) {
-          elements.screenShareOverlay.classList.add("hidden");
-        }
-        updateParticipantList();
-        const videoContainer = document.getElementById(`video-container-${participantId}`);
-        if (videoContainer && sharing) {
-          const screenShareBadge = document.createElement("div");
-          screenShareBadge.className = "screen-sharing-badge";
-          screenShareBadge.textContent = "Screen Sharing";
-          videoContainer.appendChild(screenShareBadge);
-        }
-      });
-
-      socket.on("toggle-hand", ({ participantId, raised }) => {
-        if (participantId !== socket.id) {
-          const stream = state.peerStreams.get(participantId);
-          if (stream) stream.handRaised = raised;
-          updateParticipantList();
-          showNotification(
-            `${state.participantNames.get(participantId) || "A participant"} ${raised ? "raised their hand" : "lowered their hand"}`
-          );
-        }
-      });
-
-      socket.on("ishostlist", ({ participantId, isHost }) => {
-        if (participantId === socket.id) {
-          state.isHost = isHost;
-          elements.hostOptions.classList.toggle("hidden", !isHost);
-          elements.meetingOptionsBtn.classList.toggle("hidden", !isHost);
-           
-        }
-        const name = state.participantNames.get(participantId) || "A participant";
-        showNotification(`${sanitizeInput(name)} is now ${isHost ? "the host" : "not the host"}`);
-      });
-
-
-      socket.on("toggle-recording", ({ recording, participantId }) => {
-        const name = state.participantNames.get(participantId) || "A participant";
-        showNotification(`${sanitizeInput(name)} ${recording ? "started" : "stopped"} recording`);
-      });
-
-      socket.on("update-name", ({ id, name }) => {
-        state.participantNames.set(id, sanitizeInput(name));
-        const videoContainer = document.getElementById(`video-container-${id}`);
-        if (videoContainer) {
-          const nameLabel = videoContainer.querySelector(".participant-name");
-          if (nameLabel) nameLabel.textContent = sanitizeInput(name);
-        }
-        updateParticipantList();
-      });
-
-      socket.on("chat-message", (chatMessageContent) => {
-        addChatMessages({
-          name: sanitizeInput(chatMessageContent.name),
-          message: sanitizeInput(chatMessageContent.message),
-          time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", hour12: true }),
-        });
-      });
-
-      socket.on("typing", ({ name }) => {
-        state.typingUsers.add(sanitizeInput(name));
-        renderChatMessages();
-      });
-
-      socket.on("stop-typing", ({ name }) => {
-        state.typingUsers.delete(sanitizeInput(name));
-        renderChatMessages();
-      });
-
-      socket.on("reaction", ({ emoji, name }) => {
-        showReaction(sanitizeInput(emoji));
-      });
-
-      socket.on("update-meeting-options", (options) => {
-        state.meetingOptions = { ...options };
-        showNotification("Meeting options updated by host");
-      });
-
-      socket.on("caption", ({ text, participantId }) => {
-        const name = state.participantNames.get(participantId) || "Anonymous";
-        displayCaption(text, name, false);
-      });
-
-      socket.on("start-interpretation", ({ language, participantId }) => {
-        const name = state.participantNames.get(participantId) || "Anonymous";
-        showNotification(`${sanitizeInput(name)} started interpretation for ${language.toUpperCase()}`);
-      });
-
-      socket.on("toggle-remote-mute", ({ participantId }) => {
-        if (participantId === socket.id) {
-          toggleMic();
-        }
-      });
-
-      socket.on("toggle-remote-video", ({ participantId }) => {
-        if (participantId === socket.id) {
-          toggleCamera();
-        }
-      });
-
-      socket.on("meeting-ended", () => {
-        showNotification("The meeting has ended");
-        setTimeout(() => {
-          cleanup();
-          window.location.href = "./";
-        }, 2000);
-      });
-
-      socket.on("error", ({ message }) => {
-        showNotification(message);
-      });
+  socket.on("user-disconnected", (id) => {
+    if (id === socket.id) return;
+    const participantName = state.participantNames.get(id) || "Anonymous";
+    state.typingUsers.delete(participantName);
+    state.connectedUsers.delete(id);
+    renderChatMessages();
+    if (state.screenSharingParticipant === id) {
+      state.screenSharingParticipant = null;
+      elements.screenShareOverlay.classList.add("hidden");
     }
+    showNotification(`${participantName} has left the meeting`);
+    cleanupParticipant(id);
+  });
+
+  socket.on("signal", handleSignal);
+
+  socket.on("toggle-mic", ({ id, micOn }) => {
+    const videoContainer = document.getElementById(`video-container-${id}`);
+    if (videoContainer) {
+      const video = videoContainer.querySelector("video");
+      if (video && !micOn) {
+        video.muted = true;
+      }
+    }
+    updateParticipantList();
+  });
+
+  socket.on("toggle-camera", ({ id, cameraOn }) => {
+    const videoContainer = document.getElementById(`video-container-${id}`);
+    if (videoContainer) {
+      const video = videoContainer.querySelector("video");
+      if (video && !cameraOn) {
+        video.srcObject.getVideoTracks().forEach((track) => (track.enabled = false));
+      }
+    }
+    updateParticipantList();
+  });
+
+  socket.on("screen-share", ({ sharing, participantId }) => {
+    state.screenSharingParticipant = sharing ? participantId : null;
+    if (!sharing) {
+      elements.screenShareOverlay.classList.add("hidden");
+    }
+    updateParticipantList();
+    const videoContainer = document.getElementById(`video-container-${participantId}`);
+    if (videoContainer && sharing) {
+      const screenShareBadge = document.createElement("div");
+      screenShareBadge.className = "screen-sharing-badge";
+      screenShareBadge.textContent = "Screen Sharing";
+      videoContainer.appendChild(screenShareBadge);
+    }
+  });
+
+  socket.on("toggle-hand", ({ participantId, raised }) => {
+    if (participantId !== socket.id) {
+      const stream = state.peerStreams.get(participantId);
+      if (stream) stream.handRaised = raised;
+      updateParticipantList();
+      showNotification(
+        `${state.participantNames.get(participantId) || "Participant"} ${raised ? "raised their hand" : "lowered their hand"}`
+      );
+    }
+  });
+
+  socket.on("ishostlist", ({ participantId, isHost }) => {
+    if (participantId === socket.id) {
+      state.isHost = isHost;
+      elements.endCallBtn.style.display = isHost ? "flex" : "none";
+      elements.ishostt.style.display = isHost ? "flex" : "none";
+    }
+    const name = state.participantNames.get(participantId) || "A participant";
+    showNotification(`${sanitizeInput(name)} is now ${isHost ? "the host" : "not the host"}`);
+  });
+
+  socket.on("update-name", ({ id, name }) => {
+    state.participantNames.set(id, sanitizeInput(name));
+    const videoContainer = document.getElementById(`video-container-${id}`);
+    if (videoContainer) {
+      const nameLabel = videoContainer.querySelector(".participant-name");
+      if (nameLabel) nameLabel.textContent = sanitizeInput(name);
+    }
+    updateParticipantList();
+  });
+
+  socket.on("chat-message", (chatMessageContent) => {
+    addChatMessages({
+      name: sanitizeInput(chatMessageContent.name),
+      message: sanitizeInput(chatMessageContent.message),
+      time: new Date().toLocaleTimeString([], {
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: true,
+      }),
+    });
+  });
+
+  socket.on("typing", ({ name }) => {
+    state.typingUsers.add(sanitizeInput(name));
+    renderChatMessages();
+  });
+
+  socket.on("stop-typing", ({ name }) => {
+    state.typingUsers.delete(sanitizeInput(name));
+    renderChatMessages();
+  });
+
+  socket.on("reaction", ({ emoji, name }) => {
+    showReaction(sanitizeInput(emoji));
+  });
+
+  socket.on("update-meeting-options", (options) => {
+    state.meetingOptions = { ...options };
+    showNotification("Meeting options updated by host");
+  });
+
+  socket.on("caption", ({ text, participantId }) => {
+    const name = state.participantNames.get(participantId) || "Anonymous";
+    displayCaption(text, name, false);
+  });
+
+  socket.on("start-interpretation", ({ language, participantId }) => {
+    const name = state.participantNames.get(participantId) || "Anonymous";
+    showNotification(`${sanitizeInput(name)} started interpretation for ${language.toUpperCase()}`);
+  });
+
+  socket.on("toggle-remote-mute", ({ participantId }) => {
+    if (participantId === socket.id) {
+      toggleMic();
+    }
+  });
+
+  socket.on("toggle-remote-video", ({ participantId }) => {
+    if (participantId === socket.id) {
+      toggleCamera();
+    }
+  });
+
+  socket.on("end-meeting", () => {
+    showNotification("The meeting has been ended by the host");
+    cleanup();
+    setTimeout(() => (window.location.href = "./"));
+  });
+
+  socket.on("error", ({ message }) => {
+    showNotification(message);
+  });
+}
 
     // Initialize the application
     init();  
