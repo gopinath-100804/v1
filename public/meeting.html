@@ -1147,7 +1147,7 @@
   <script src="/meet/socket.io/socket.io.js"></script>
 
   <script>
-    
+
     const path = '/meet/socket.io';
 
     const socket = io({
@@ -1675,7 +1675,7 @@
             const initialsDiv = document.createElement("div");
             initialsDiv.className = "initials-overlay absolute inset-0 flex items-center justify-center";
             const initialsSpan = document.createElement("span");
-            initialsSpan.className = "text-white text-4xl font-bold bg-blue-600 rounded-full w-20 h-20 flex items-center justify-center";
+            initialsSpan.className = "text-white text-4xl font-bold bg-blue-600 rounded-full w-20 h-20 flex items-center select-none justify-center";
             initialsSpan.textContent = initials;
             initialsDiv.appendChild(initialsSpan);
             wrapper.appendChild(initialsDiv);
@@ -1724,7 +1724,7 @@
         const initialsDiv = document.createElement("div");
         initialsDiv.className = "initials-overlay absolute inset-0 flex items-center justify-center";
         const initialsSpan = document.createElement("span");
-        initialsSpan.className = "text-white text-4xl font-bold bg-blue-600 rounded-full w-20 h-20 flex items-center justify-center";
+        initialsSpan.className = "text-white text-4xl font-bold bg-blue-600 rounded-full w-20 h-20 flex items-center select-none justify-center";
         initialsSpan.textContent = initials;
         initialsDiv.appendChild(initialsSpan);
         videoWrapper.appendChild(initialsDiv);
@@ -2014,9 +2014,18 @@
           // Add initials if not present
           if (!initialsOverlay) {
             const initials = getInitials(userName);
+
+            // Create overlay container
             const initialsDiv = document.createElement("div");
-            initialsDiv.className = "initials-overlay absolute inset-0 flex items-center justify-center text-white text-4xl font-bold bg-gray-800";
-            initialsDiv.textContent = initials;
+            initialsDiv.className = "initials-overlay absolute inset-0 flex items-center justify-center bg-gray-800";
+
+            // Create styled span for initials
+            const initialsSpan = document.createElement("span");
+            initialsSpan.className = "text-white text-4xl font-bold bg-blue-600 rounded-full w-20 h-20 flex items-center justify-center select-none shadow-lg";
+            initialsSpan.textContent = initials;
+
+            // Append span to overlay and overlay to wrapper
+            initialsDiv.appendChild(initialsSpan);
             wrapper.appendChild(initialsDiv);
           }
           video?.classList.add("hidden");
