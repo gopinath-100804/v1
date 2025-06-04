@@ -687,15 +687,7 @@
       /* Subtle text shadow for depth */
     }
 
-    /* Circular avatar style for smaller tiles */
     .participant-tile .initials-overlay {
-      max-height: 100%;
-      max-width: 100%;
-      overflow: hidden;
-      aspect-ratio: 1 / 1;
-      /* Maintain square aspect ratio */
-      border-radius: 50%;
-      /* Circular for participant tiles */
       font-size: clamp(1.5rem, 8vw, 2rem);
       /* Responsive font size */
       background: linear-gradient(135deg, #4a5568 0%, #2d3748 100%);
@@ -1683,11 +1675,14 @@
         if (isCameraOff && !isSharing) {
           video?.classList.add("hidden");
           if (!initialsOverlay) {
-            const initialsDiv = document.createElement("div");
-            initialsDiv.className = "initials-overlay absolute inset-0 flex items-center justify-center text-white text-4xl font-bold bg-gray-800";
-            initialsDiv.textContent = initials;
-            wrapper.appendChild(initialsDiv);
-          } else {
+  const initialsDiv = document.createElement("div");
+  initialsDiv.className = "initials-overlay absolute inset-0 flex items-center justify-center";
+  const initialsSpan = document.createElement("span");
+  initialsSpan.className = "text-white text-4xl font-bold bg-blue-600 rounded-full w-20 h-20 flex items-center justify-center";
+  initialsSpan.textContent = initials;
+  initialsDiv.appendChild(initialsSpan);
+  wrapper.appendChild(initialsDiv);
+} else {
             initialsOverlay.textContent = initials;
           }
         } else {
@@ -1727,16 +1722,16 @@
         video.play().catch((err) => console.error(`Video play failed for ${participantId}:`, err));
       }
 
-      if (isCameraOff && !isSharing) {
-        video.classList.add("hidden");
-        const initialsDiv = document.createElement("div");
-        initialsDiv.className = "initials-overlay absolute inset-0 flex items-center justify-center";
-        const initialsSpan = document.createElement("span");
-        initialsSpan.className = "text-white text-4xl font-bold bg-gray-800 rounded-full w-16 h-16 flex items-center justify-center";
-        initialsSpan.textContent = initials;
-        initialsDiv.appendChild(initialsSpan);
-        videoWrapper.appendChild(initialsDiv);
-      }
+     if (isCameraOff && !isSharing) {
+  video.classList.add("hidden");
+  const initialsDiv = document.createElement("div");
+  initialsDiv.className = "initials-overlay absolute inset-0 flex items-center justify-center";
+  const initialsSpan = document.createElement("span");
+  initialsSpan.className = "text-white text-4xl font-bold bg-blue-600 rounded-full w-20 h-20 flex items-center justify-center";
+  initialsSpan.textContent = initials;
+  initialsDiv.appendChild(initialsSpan);
+  videoWrapper.appendChild(initialsDiv);
+}
 
       const nameLabel = document.createElement("div");
       nameLabel.className = "participant-name";
