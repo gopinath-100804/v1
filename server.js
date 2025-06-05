@@ -108,7 +108,7 @@ io.on('connection', (socket) => {
     }
   });
 
-  socket.on('join-room', async ({ room, name, sessionId, title }, callback) => {
+  socket.on('join-room', async ({ room, name, sessionId, title, isVideoOn }, callback) => {
     // Check if room exists in database
     let roomExistsInDb = false;
     try {
@@ -211,7 +211,11 @@ io.on('connection', (socket) => {
       console.error('Error updating participants in database:', error);
     }
 
-    socket.to(room).emit('user-connected', { id: socket.id, name });
+    socket.to(room).emit('user-connected', {
+      id: socket.id,
+      name,
+      isVideoOn: isVideoOn || false // ✅ Corrected: use `isVideoOn` from destructured param
+    });
 
     const usersInRoom = roomData.users
       .filter((user) => user.id !== socket.id)
