@@ -12,7 +12,6 @@
     integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw=="
     crossorigin="anonymous" />
   <style>
-    /* Base styles for all devices */
     body,
     html {
       margin: 0;
@@ -23,7 +22,6 @@
       font-family: "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
     }
 
-    /* Video Grid Layout */
     #video-grid {
       display: flex;
       flex-direction: column;
@@ -732,7 +730,9 @@
       }
     }
 
-
+    #end-call-btn {
+      display: none;
+    }
 
     .video-wrapper {
       position: relative;
@@ -748,6 +748,10 @@
       height: 100%;
       object-fit: cover;
       z-index: 0;
+    }
+
+    .video-container-local .participant-controls {
+      display: none;
     }
   </style>
 </head>
@@ -1431,7 +1435,7 @@
       elements.shareEmail.addEventListener("click", shareViaEmail);
       elements.shareSms.addEventListener("click", shareViaSms);
       elements.shareCopy.addEventListener("click", copyMeetingLinkToClipboard);
-      elements.meetingOptions.addEventListener("click", showMeetingOptionsModal); // Added listener
+      elements.meetingOptions.addEventListener("click", showMeetingOptionsModal);
 
       elements.sidebarTabs.querySelectorAll("button").forEach((button) => {
         button.addEventListener("click", () => {
@@ -1450,6 +1454,15 @@
           sendReaction(emoji);
           elements.reactionsPopup.classList.add("hidden");
         });
+      });
+
+      // Add click event listener for video containers to set as main video
+      elements.videoGrid.addEventListener("click", (event) => {
+        const videoContainer = event.target.closest('[id^="video-container-"]');
+        if (videoContainer) {
+          const participantId = videoContainer.id.replace("video-container-", "");
+          setMainVideo(participantId);
+        }
       });
 
       document.addEventListener("click", (e) => {
@@ -1687,7 +1700,6 @@
           micIcon.className = `fas ${isMicOn ? "fa-microphone text-green-400" : "fa-microphone-slash text-red-500"}`;
           micIcon.title = isMicOn ? "Mic On" : "Mic Off";
         }
-
         return;
       }
 
@@ -1724,12 +1736,19 @@
       nameLabel.className = "participant-name";
       nameLabel.textContent = sanitizeInput(name);
 
+
+
       const controls = document.createElement("div");
       controls.className = "participant-controls";
+
       const micIcon = document.createElement("i");
-      micIcon.className = `fas ${isMicOn ? "fa-microphone text-green-400" : "fa-microphone-slash text-red-500"}`;
+      if (participantId !== "local") {
+        video?.classList.add("hidden");
+        micIcon.className = `fas ${isMicOn ? "fa-microphone text-green-400" : "fa-microphone-slash text-red-500"}`;
+      }
       micIcon.title = isMicOn ? "Mic On" : "Mic Off";
       controls.appendChild(micIcon);
+
 
       videoWrapper.appendChild(video);
       videoContainer.appendChild(videoWrapper);
@@ -1803,6 +1822,7 @@
         let secondaryContainer = elements.videoGrid.querySelector(".video-secondary-container");
         if (!secondaryContainer) {
           secondaryContainer = document.createElement("div");
+          activate
           secondaryContainer.className = "video-secondary-container";
           elements.videoGrid.appendChild(secondaryContainer);
         }
@@ -1811,7 +1831,6 @@
 
       updateVideoGridLayout();
     }
-
     // Add Participant
     function addParticipant(id, name, isHost, isHandRaised = false, isScreenSharing = false) {
       const sanitizedName = sanitizeInput(name) || "Anonymous";
@@ -1889,11 +1908,10 @@
       const controlsDiv = document.createElement("div");
       controlsDiv.className = "flex space-x-1";
 
+
+
       const muteBtn = document.createElement("button");
-      muteBtn.className = "text-xs bg-gray-600 hover:bg-gray-500 px-2 py-1 rounded";
-      muteBtn.setAttribute("aria-label", "Mute participant");
-      muteBtn.innerHTML = '<i class="fas fa-microphone"></i>';
-      muteBtn.addEventListener("click", () => toggleRemoteMute(id));
+
 
       const videoBtn = document.createElement("button");
       videoBtn.className = "text-xs bg-gray-600 hover:bg-gray-500 px-2 py-1 rounded";
@@ -3490,7 +3508,6 @@
       });
     }
 
-    // Initialize the application
     init();  
   </script>
 

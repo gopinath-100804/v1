@@ -249,8 +249,8 @@ io.on('connection', (socket) => {
   });
 
   socket.on("toggle-mic", ({ room, isMicOn }) => {
-  socket.to(room).emit("mic-toggled", { id: socket.id, isMicOn });
-});
+    socket.to(room).emit("mic-toggled", { id: socket.id, isMicOn });
+  });
 
 
 
@@ -346,10 +346,14 @@ io.on('connection', (socket) => {
       }
 
       // Verify if the requester is the host (first user in the room)
-
+      const isHost = roomData.users[0]?.id === socket.id;
+      if (!isHost) {
+        callback?.({ error: 'Only the host can end the meeting' });
+        return;
+      }
 
       // Broadcast meeting-ended event to all clients in the room
-      io.to(room).emit('meeting-ended', { reason: 'Meeting ended by host' });
+      io.to(room).emit('end-meeting');
 
       // Update meeting status in the database
       await db.execute('UPDATE meetings SET is_ended = TRUE WHERE room = ?', [room]);
