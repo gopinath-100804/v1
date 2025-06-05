@@ -108,7 +108,7 @@ io.on('connection', (socket) => {
     }
   });
 
-  socket.on('join-room', async ({ room, name, sessionId, title, isVideoOn }, callback) => {
+  socket.on('join-room', async ({ room, name, sessionId, title, isVideoOn, isMicOn }, callback) => {
     // Check if room exists in database
     let roomExistsInDb = false;
     try {
@@ -198,7 +198,11 @@ io.on('connection', (socket) => {
     }
 
     // Add user to room data
-    roomData.users.push({ id: socket.id, name: name || 'Anonymous' });
+    roomData.users.push({
+      id: socket.id,
+      name: name || 'Anonymous',
+      isMicOn: isMicOn ?? true, // default to true if undefined
+    });
     socket.join(room);
 
     // Update participants in database with validated JSON
@@ -214,12 +218,20 @@ io.on('connection', (socket) => {
     socket.to(room).emit('user-connected', {
       id: socket.id,
       name,
-      isVideoOn: isVideoOn || false // ✅ Corrected: use `isVideoOn` from destructured param
+      isVideoOn: isVideoOn || false,
+      isMicOn: isMicOn ?? true, // forward mic status
     });
+
 
     const usersInRoom = roomData.users
       .filter((user) => user.id !== socket.id)
-      .map((user) => ({ id: user.id, name: user.name }));
+      .map((user) => ({
+        id: user.id,
+        name: user.name,
+        isMicOn: user.isMicOn ?? true, // default true if missing
+        isVideoOn: user.isVideoOn ?? false
+      }));
+
     socket.emit('all-users', usersInRoom, roomData.screenSharingParticipant);
 
     socket.emit('get-meeting-options', roomData.meetingOptions);
@@ -235,6 +247,12 @@ io.on('connection', (socket) => {
       name: name || roomData?.users.find((u) => u.id === socket.id)?.name || 'Anonymous',
     });
   });
+
+  socket.on("toggle-mic", ({ room, isMicOn }) => {
+  socket.to(room).emit("mic-toggled", { id: socket.id, isMicOn });
+});
+
+
 
   socket.on('update-name', async ({ room, name }) => {
     const roomData = rooms.get(room);

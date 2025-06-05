@@ -908,9 +908,6 @@
           <div class="flex space-x-1">
             <input type="text" placeholder="Type a message"
               class="flex-1 bg-gray-700 border border-gray-600 rounded-full px-3 py-1 text-sm" id="chat-input" />
-            <button class="p-1 rounded-full hover:bg-gray-700" id="emoji-picker-btn">
-              <i class="far fa-smile text-sm"></i>
-            </button>
             <button class="p-1 rounded-full bg-blue-600 hover:bg-blue-700" id="send-message-btn">
               <i class="fas fa-paper-plane text-sm"></i>
             </button>
@@ -1314,6 +1311,7 @@
       iceCandidatePoolSize: 0,
     };
 
+
     function init() {
       if (!room) {
         showNotification("Invalid meeting room");
@@ -1327,6 +1325,7 @@
         userName = sessionData.username;
         const ishostname = sessionData.meeting.host_name;
         state.hostnames = ishostname;
+
 
         state.participantNames.set("local", sanitizeInput(userName));
         state.connectedUsers.add(socket.id);
@@ -1505,11 +1504,18 @@
       elements.meetingLink.value = link;
     }
 
+    state.micStatus = new Map();
+
     // Start Meeting
     function startMeeting() {
       startLocalMedia()
         .then(() => {
-          socket.emit("join-room", { room, name: userName });
+          socket.emit("join-room", {
+            room,
+            name: userName,
+            isVideoOn: state.isCameraOn
+          });
+
 
           socket.emit("check-host", { room }, (response) => {
             state.isHost = response.isHost;
@@ -1647,60 +1653,45 @@
         ? !state.isCameraOn
         : state.cameraStatus.get(participantId) === false;
 
+      const isMicOn = state.micStatus.get(participantId) !== false; // default to true
 
       if (existingContainer) {
         const video = existingContainer.querySelector("video");
-        const nameLabel = existingContainer.querySelector(".participant-name");
-        const oldBadge = existingContainer.querySelector(".screen-sharing-badge");
         const initialsOverlay = existingContainer.querySelector(".initials-overlay");
+        const wrapper = existingContainer.querySelector(".video-wrapper");
 
         if (video && stream) {
           video.srcObject = stream;
-          video.classList.toggle("camera-video", !isSharing);
           video.muted = isLocal;
-          video.play().catch((err) => console.error(`Video play failed for ${participantId}:`, err));
+          video.play().catch(err => console.error(err));
         }
 
-        if (nameLabel) {
-          nameLabel.textContent = sanitizeInput(name);
-        }
-
-        if (oldBadge) oldBadge.remove();
-
-        // 👇 Handle initials overlay for both local and remote
-        const wrapper = existingContainer.querySelector(".video-wrapper");
         if (isCameraOff && !isSharing) {
           video?.classList.add("hidden");
           if (!initialsOverlay) {
             const initialsDiv = document.createElement("div");
             initialsDiv.className = "initials-overlay absolute inset-0 flex items-center justify-center";
             const initialsSpan = document.createElement("span");
-            initialsSpan.className = "text-white text-4xl font-bold bg-blue-600 rounded-full w-20 h-20 flex items-center select-none justify-center";
+            initialsSpan.className = "text-white text-4xl font-bold bg-blue-600 rounded-full w-20 h-20 flex items-center justify-center select-none";
             initialsSpan.textContent = initials;
             initialsDiv.appendChild(initialsSpan);
             wrapper.appendChild(initialsDiv);
-          } else {
-            initialsOverlay.textContent = initials;
           }
         } else {
           video?.classList.remove("hidden");
           initialsOverlay?.remove();
         }
 
-        if (isSharing) {
-          const screenShareBadge = document.createElement("div");
-          screenShareBadge.className = "screen-sharing-badge";
-          screenShareBadge.textContent = "Screen Sharing";
-          existingContainer.appendChild(screenShareBadge);
+        const micIcon = existingContainer.querySelector(".participant-controls i");
+        if (micIcon) {
+          micIcon.className = `fas ${isMicOn ? "fa-microphone text-green-400" : "fa-microphone-slash text-red-500"}`;
+          micIcon.title = isMicOn ? "Mic On" : "Mic Off";
         }
 
-        existingContainer.className = state.focusedParticipant === participantId ? "video-main" : "participant-tile";
-        updateVideoGridLayout();
-        updateParticipantList();
         return;
       }
 
-      // Create new video container if it doesn't exist
+      // If new video element
       const videoContainer = document.createElement("div");
       videoContainer.id = `video-container-${participantId}`;
       videoContainer.className = state.focusedParticipant === participantId ? "video-main" : "participant-tile";
@@ -1709,14 +1700,13 @@
       videoWrapper.className = "video-wrapper relative";
 
       const video = document.createElement("video");
-      video.id = `video-${participantId}`;
       video.autoplay = true;
       video.playsInline = true;
       video.muted = isLocal;
       video.className = isSharing ? "" : "camera-video";
       if (stream) {
         video.srcObject = stream;
-        video.play().catch((err) => console.error(`Video play failed for ${participantId}:`, err));
+        video.play().catch((err) => console.error(err));
       }
 
       if (isCameraOff && !isSharing) {
@@ -1724,7 +1714,7 @@
         const initialsDiv = document.createElement("div");
         initialsDiv.className = "initials-overlay absolute inset-0 flex items-center justify-center";
         const initialsSpan = document.createElement("span");
-        initialsSpan.className = "text-white text-4xl font-bold bg-blue-600 rounded-full w-20 h-20 flex items-center select-none justify-center";
+        initialsSpan.className = "text-white text-4xl font-bold bg-blue-600 rounded-full w-20 h-20 flex items-center justify-center select-none";
         initialsSpan.textContent = initials;
         initialsDiv.appendChild(initialsSpan);
         videoWrapper.appendChild(initialsDiv);
@@ -1736,48 +1726,17 @@
 
       const controls = document.createElement("div");
       controls.className = "participant-controls";
-
-      if (!isLocal) {
-        const muteBtn = document.createElement("button");
-        muteBtn.innerHTML = '<i class="fas fa-microphone"></i>';
-        muteBtn.addEventListener("click", () => toggleRemoteMute(participantId));
-
-        const videoBtn = document.createElement("button");
-        videoBtn.innerHTML = '<i class="fas fa-video"></i>';
-        videoBtn.addEventListener("click", () => toggleRemoteVideo(participantId));
-
-        controls.appendChild(muteBtn);
-        controls.appendChild(videoBtn);
-      }
-
-      if (isSharing) {
-        const screenShareBadge = document.createElement("div");
-        screenShareBadge.className = "screen-sharing-badge";
-        screenShareBadge.textContent = "Screen Sharing";
-        videoContainer.appendChild(screenShareBadge);
-      }
+      const micIcon = document.createElement("i");
+      micIcon.className = `fas ${isMicOn ? "fa-microphone text-green-400" : "fa-microphone-slash text-red-500"}`;
+      micIcon.title = isMicOn ? "Mic On" : "Mic Off";
+      controls.appendChild(micIcon);
 
       videoWrapper.appendChild(video);
       videoContainer.appendChild(videoWrapper);
       videoContainer.appendChild(nameLabel);
       videoContainer.appendChild(controls);
 
-      videoContainer.addEventListener("click", () => setMainVideo(participantId));
-
-      if (state.focusedParticipant === participantId) {
-        elements.videoGrid.insertBefore(videoContainer, elements.videoGrid.firstChild);
-      } else {
-        let secondaryContainer = elements.videoGrid.querySelector(".video-secondary-container");
-        if (!secondaryContainer) {
-          secondaryContainer = document.createElement("div");
-          secondaryContainer.className = "video-secondary-container";
-          elements.videoGrid.appendChild(secondaryContainer);
-        }
-        secondaryContainer.appendChild(videoContainer);
-      }
-
-      updateVideoGridLayout();
-      updateParticipantList();
+      elements.videoGrid.appendChild(videoContainer);
     }
 
 
@@ -1956,38 +1915,20 @@
     // Toggle Microphone
     function toggleMic() {
       state.isMicOn = !state.isMicOn;
-      let hasAudio = false;
+      state.micStatus.set("local", state.isMicOn);
 
-      if (mediaState.activeAudioTrack) {
-        mediaState.activeAudioTrack.enabled = state.isMicOn;
-        hasAudio = true;
-      }
-
-      if (state.isScreenSharing && state.screenStream) {
-        state.screenStream.getAudioTracks().forEach((track) => {
-          if (track.kind === "audio" && track.label.includes("microphone")) {
-            track.enabled = state.isMicOn;
-            hasAudio = true;
-          }
+      if (state.localStream) {
+        state.localStream.getAudioTracks().forEach((track) => {
+          track.enabled = state.isMicOn;
         });
       }
 
-      if (!hasAudio && !state.isMicOn) {
-        showNotification("No microphone detected");
-        state.isMicOn = false;
-      }
-
-      elements.micToggle.innerHTML = `<i class="fas ${state.isMicOn ? "fa-microphone text-green-400" : "fa-microphone-slash"}"></i>`;
-      showNotification(state.isMicOn ? "Microphone on" : "Microphone off");
-
-      state.peers.forEach((pc) => {
-        const sender = pc.getSenders().find((s) => s.track?.kind === "audio" && s.track?.label.includes("microphone"));
-        if (sender && sender.track) {
-          sender.track.enabled = state.isMicOn;
-        }
+      socket.emit("toggle-mic", {
+        room,
+        isMicOn: state.isMicOn,
       });
 
-      socket.emit("toggle-mic", { room, micOn: state.isMicOn });
+      elements.micToggle.innerHTML = `<i class="fas ${state.isMicOn ? "fa-microphone text-green-400" : "fa-microphone-slash text-red-500"}"></i>`;
     }
 
     // Toggle Camera
@@ -2021,7 +1962,7 @@
 
             // Create styled span for initials
             const initialsSpan = document.createElement("span");
-            initialsSpan.className = "text-white text-4xl font-bold bg-blue-600 rounded-full w-20 h-20 flex items-center justify-center select-none shadow-lg";
+            initialsSpan.className = "text-white text-4xl font-bold bg-blue-600 rounded-full w-20 h-20 flex items-center justify-center shadow-lg select-none";
             initialsSpan.textContent = initials;
 
             // Append span to overlay and overlay to wrapper
@@ -3310,28 +3251,54 @@
         socket.emit("join-room", { room, name: userName });
       });
 
-      socket.on("user-connected", ({ id, name, isHost }) => {
+      socket.on("user-connected", ({ id, name, isHost, isVideoOn }) => {
         if (id === socket.id) return;
+
+        if (state.connectedUsers.has(id)) return;
+
         state.connectedUsers.add(id);
         state.participantNames.set(id, sanitizeInput(name || "Anonymous"));
+        state.cameraStatus.set(id, isVideoOn); // ✅ store correct video status
+
         const pc = createPeerConnection(id, name, true);
         addParticipant(id, name, isHost);
         showNotification(`${sanitizeInput(name)} joined the meeting`);
       });
 
+
       socket.on("user-disconnected", (id) => {
+        // Ignore if it's our own socket (no need to handle local disconnect)
         if (id === socket.id) return;
+
+        // Get and remove participant's name
         const participantName = state.participantNames.get(id) || "Anonymous";
-        state.typingUsers.delete(participantName);
+        state.participantNames.delete(id);
+
+        // Remove from connected user set
         state.connectedUsers.delete(id);
+
+        // Clean up from typing users if needed
+        state.typingUsers.delete(participantName);
         renderChatMessages();
+
+        // Stop screen sharing if that participant was sharing
         if (state.screenSharingParticipant === id) {
           state.screenSharingParticipant = null;
           elements.screenShareOverlay.classList.add("hidden");
         }
-        showNotification(`${participantName} has left the meeting`);
+
+        // Remove participant video container
         cleanupParticipant(id);
+
+        // Show user-friendly notification
+        showNotification(`${participantName} has left the meeting`);
+
+        // Update UI layout and participant list
+        updateParticipantCount();
+        updateParticipantList();
+        updateVideoGridLayout();
       });
+
 
       socket.on("signal", handleSignal);
 
@@ -3343,6 +3310,31 @@
 
         createVideoElement(id, name, stream, false); // Re-render their tile
       });
+
+      socket.on("mic-toggled", ({ id, isMicOn }) => {
+        state.micStatus.set(id, isMicOn);
+
+        // Update mic icon in video tile
+        const videoContainer = document.getElementById(`video-container-${id}`);
+        if (videoContainer) {
+          const micIcon = videoContainer.querySelector(".participant-controls i");
+          if (micIcon) {
+            micIcon.className = `fas ${isMicOn ? "fa-microphone text-green-400" : "fa-microphone-slash text-red-500"}`;
+            micIcon.title = isMicOn ? "Mic On" : "Mic Off";
+          }
+        }
+
+        // Update mic icon in participant list
+        const participantRow = elements.participantsList.querySelector(`[data-id="${id}"]`);
+        if (participantRow) {
+          const micIcon = participantRow.querySelector("i.fas.fa-microphone, i.fas.fa-microphone-slash");
+          if (micIcon) {
+            micIcon.className = `fas ${isMicOn ? "fa-microphone text-green-400" : "fa-microphone-slash text-red-500"}`;
+            micIcon.title = isMicOn ? "Mic On" : "Mic Off";
+          }
+        }
+      });
+
 
       socket.on("toggle-mic", ({ id, micOn }) => {
         const videoContainer = document.getElementById(`video-container-${id}`);
