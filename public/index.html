@@ -476,9 +476,11 @@
  <script src="https://cdn.socket.io/4.8.1/socket.io.min.js" integrity="sha384-mkQ3/7FUtcGyoppY6bz/PORYoGqOl7/aSUMn2ymDOJcapfS6PHqxhRTMh1RR0Q6+" crossorigin="anonymous"></script>
   <script>
 
-    const socket = io({
-      withCredentials: true
-    });
+    const socket = io('https://videomeet-one.vercel.app', {
+  withCredentials: true
+});
+
+    const backendUrl = 'https://webtesst.ct.ws';
 
     const newMeetingBtn = document.getElementById('new-meeting-btn');
     const joinMeetingHomeBtn = document.getElementById('join-meeting-home-btn');
@@ -516,7 +518,7 @@
     });
     socket.on('error', ({ message }) => {
       showNotification(message);
-      window.location.href = 'https://webtesst.ct.ws/contents/admin/login.php';
+      window.location.href = '${backendUrl}/contents/admin/login.php';
     });
 
     // Input Sanitization
@@ -534,14 +536,14 @@
     // Fetch session data
     async function fetchSession() {
       try {
-        const response = await fetch(`https://webtesst.ct.ws/contents/files/get-session.php`, {
+        const response = await fetch(`${backendUrl}/contents/files/get-session.php`, {
           credentials: 'include'
         });
         const data = await response.json();
         sessionUsername = data.username || null;
         if (!sessionUsername) {
           showNotification('Please log in to continue.');
-          window.location.href = 'https://webtesst.ct.ws/contents/admin/login.php';
+          window.location.href = '${backendUrl}/contents/admin/login.php';
           return;
         }
         newMeetingNameInput.value = sessionUsername;
@@ -557,7 +559,7 @@
     // Fetch recent meetings from the server
     async function fetchRecentMeetings() {
       try {
-        const response = await fetch(`https://webtesst.ct.ws/contents/files/recent-meetings.php`, {
+        const response = await fetch(`${backendUrl}/contents/files/recent-meetings.php`, {
           credentials: 'include'
         });
         if (!response.ok) {
@@ -638,7 +640,7 @@
     function showNewMeetingModal() {
       if (!sessionUsername || !sessionId) {
         showNotification('Please log in to start a meeting.');
-        window.location.href = 'https://webtesst.ct.ws/contents/admin/login.php';
+        window.location.href = '${backendUrl}/contents/admin/login.php';
         return;
       }
       preGeneratedRoomId = generateMeetingId();
@@ -651,7 +653,7 @@
     function startNewMeeting() {
       if (!sessionUsername || !sessionId) {
         showNotification('Please log in to start a meeting.');
-        window.location.href = 'https://webtesst.ct.ws/contents/admin/login.php';
+        window.location.href = '${backendUrl}/contents/admin/login.php';
         return;
       }
       const room = preGeneratedRoomId || generateMeetingId();
@@ -681,7 +683,7 @@
         if (response.error) {
           showNotification(response.error);
           if (response.error.includes('Session')) {
-            window.location.href = 'https://webtesst.ct.ws/contents/admin/login.php';
+            window.location.href = '${backendUrl}/contents/admin/login.php';
           }
           return;
         }
@@ -696,7 +698,7 @@
     function joinMeeting(roomId = null) {
       if (!sessionUsername || !sessionId) {
         showNotification('Please log in to join a meeting.');
-        window.location.href = 'https://webtesst.ct.ws/contents/admin/login.php';
+        window.location.href = '${backendUrl}/contents/admin/login.php';
         return;
       }
       const room = roomId || joinMeetingId.value.trim();
@@ -741,7 +743,7 @@
           if (response.error) {
             showNotification(response.error);
             if (response.error.includes('Session')) {
-              window.location.href = 'https://webtesst.ct.ws/contents/admin/login.php';
+              window.location.href = '${backendUrl}/contents/admin/login.php';
             }
             return;
           }
@@ -757,7 +759,7 @@
     function showJoinMeetingModal() {
       if (!sessionUsername || !sessionId) {
         showNotification('Please log in to join a meeting.');
-        window.location.href = 'https://webtesst.ct.ws/contents/admin/login.php';
+        window.location.href = '${backendUrl}/contents/admin/login.php';
         return;
       }
       joinMeetingModal.classList.remove('hidden');
@@ -769,7 +771,7 @@
     function showInviteFriendsModal() {
       if (!sessionUsername || !sessionId) {
         showNotification('Please log in to invite friends.');
-        window.location.href = 'https://webtesst.ct.ws/contents/admin/login.php';
+        window.location.href = '${backendUrl}/contents/admin/login.php';
         return;
       }
       updateMeetingLink();
@@ -796,7 +798,7 @@
     function sendEmailInvites() {
       if (!sessionUsername || !sessionId) {
         showNotification('Please log in to send invites.');
-        window.location.href = 'https://webtesst.ct.ws/contents/admin/login.php';
+        window.location.href = '${backendUrl}/contents/admin/login.php';
         return;
       }
       const emails = inviteEmails.value.trim();
