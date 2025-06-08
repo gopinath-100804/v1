@@ -689,8 +689,7 @@
       }
 
       #reactions-popup,
-      #more-options-popup,
-      #virtual-background-popup {
+      #more-options-popup {
         bottom: 4rem !important;
         right: 0.25rem !important;
         left: 0.25rem !important;
@@ -805,9 +804,6 @@
           <button class="p-2 rounded-full bg-gray-700 hover:bg-gray-600" id="reactions-btn">
             <i class="far fa-smile"></i>
           </button>
-          <button class="p-2 rounded-full bg-gray-700 hover:bg-gray-600" id="virtual-background-btn">
-            <i class="fas fa-image"></i>
-          </button>
         </div>
         <div class="flex items-center space-x-2">
           <button class="p-2 rounded-full bg-gray-700 hover:bg-gray-600" id="raise-hand-btn">
@@ -885,9 +881,7 @@
             <button class="p-1 rounded-full bg-blue-600 hover:bg-blue-700" id="send-message-btn">
               <i class="fas fa-paper-plane text-sm"></i>
             </button>
-            <button class="p-1 rounded-full bg-gray-700 hover:bg-gray-600" id="send-reaction-btn">
-              <i class="fas fa-heart text-red-400 text-sm"></i>
-            </button>
+
           </div>
         </div>
       </div>
@@ -963,39 +957,6 @@
         <i class="fas fa-expand mr-2 text-sm"></i> Full screen
       </button>
     </div>
-  </div>
-  <!-- Virtual Background Popup -->
-  <div class="fixed bottom-20 left-10 bg-gray-800 rounded-lg shadow-lg p-2 hidden w-64" id="virtual-background-popup">
-    <h3 class="font-medium text-sm mb-2">Virtual Background</h3>
-    <div class="grid grid-cols-3 gap-1 mb-2">
-      <button class="p-1 bg-gray-700 hover:bg-gray-600 rounded flex flex-col items-center" data-background="none">
-        <div class="w-10 h-10 bg-gray-600 rounded mb-1"></div>
-        <span class="text-xs">None</span>
-      </button>
-      <button class="p-1 bg-gray-700 hover:bg-gray-600 rounded flex flex-col items-center" data-background="blur">
-        <div class="w-10 h-10 bg-blue-600 rounded mb-1"></div>
-        <span class="text-xs">Blur</span>
-      </button>
-      <button class="p-1 bg-gray-700 hover:bg-gray-600 rounded flex flex-col items-center" data-background="office">
-        <div class="w-10 h-10 bg-green-600 rounded mb-1"></div>
-        <span class="text-xs">Office</span>
-      </button>
-      <button class="p-1 bg-gray-700 hover:bg-gray-600 rounded flex flex-col items-center" data-background="beach">
-        <div class="w-10 h-10 bg-purple-600 rounded mb-1"></div>
-        <span class="text-xs">Beach</span>
-      </button>
-      <button class="p-1 bg-gray-700 hover:bg-gray-600 rounded flex flex-col items-center" data-background="mountains">
-        <div class="w-10 h-10 bg-yellow-600 rounded mb-1"></div>
-        <span class="text-xs">Mountains</span>
-      </button>
-      <button class="p-1 bg-gray-700 hover:bg-gray-600 rounded flex flex-col items-center" data-background="space">
-        <div class="w-10 h-10 bg-red-600 rounded mb-1"></div>
-        <span class="text-xs">Space</span>
-      </button>
-    </div>
-    <button class="w-full text-left px-2 py-1 bg-blue-600 hover:bg-blue-700 rounded text-xs" id="add-background-image">
-      <i class="fas fa-plus mr-2"></i> Add Image
-    </button>
   </div>
 
   <!-- Invite Friends Modal -->
@@ -1195,7 +1156,6 @@
       endCallBtn: document.getElementById("end-call-btn"),
       moreOptionsBtn: document.getElementById("more-options-btn"),
       reactionsBtn: document.getElementById("reactions-btn"),
-      virtualBackgroundBtn: document.getElementById("virtual-background-btn"),
       sidebar: document.getElementById("sidebar"),
       closeSidebarBtn: document.getElementById("close-sidebar"),
       participantsToggle: document.getElementById("participants-toggle"),
@@ -1212,14 +1172,12 @@
       copyMeetingLinkSidebar: document.getElementById("copy-meeting-link-sidebar"),
       chatInput: document.getElementById("chat-input"),
       sendMessageBtn: document.getElementById("send-message-btn"),
-      sendReactionBtn: document.getElementById("send-reaction-btn"),
       chatMessages: document.getElementById("chat-messages"),
       screenShareOverlay: document.getElementById("screen-share-overlay"),
       stopScreenShareBtn: document.getElementById("stop-screen-share"),
       minimizeScreenShareBtn: document.getElementById("minimize-screen-share"),
       reactionsPopup: document.getElementById("reactions-popup"),
       moreOptionsPopup: document.getElementById("more-options-popup"),
-      virtualBackgroundPopup: document.getElementById("virtual-background-popup"),
       inviteFriendsModal: document.getElementById("invite-friends-modal"),
       closeInviteModal: document.getElementById("close-invite-modal"),
       meetingLink: document.getElementById("meeting-link"),
@@ -1385,7 +1343,6 @@
       elements.endCallBtn.addEventListener("click", endCall);
       elements.moreOptionsBtn.addEventListener("click", toggleMoreOptions);
       elements.reactionsBtn.addEventListener("click", toggleReactionsPopup);
-      elements.virtualBackgroundBtn.addEventListener("click", toggleVirtualBackgroundPopup);
       elements.closeSidebarBtn.addEventListener("click", toggleSidebar);
       elements.participantsToggle.addEventListener("click", () => {
         toggleSidebar();
@@ -1448,12 +1405,6 @@
         ) {
           elements.reactionsPopup.classList.add("hidden");
         }
-        if (
-          !elements.virtualBackgroundBtn.contains(e.target) &&
-          !elements.virtualBackgroundPopup.contains(e.target)
-        ) {
-          elements.virtualBackgroundPopup.classList.add("hidden");
-        }
       });
 
       elements.chatInput.addEventListener("keypress", (e) => {
@@ -1463,7 +1414,6 @@
         }
       });
       elements.sendMessageBtn.addEventListener("click", sendChatMessage);
-      elements.sendReactionBtn.addEventListener("click", () => sendReaction("❤️"));
 
       let typingTimeout = null;
       elements.chatInput.addEventListener("input", () => {
@@ -2758,11 +2708,6 @@
     // Toggle Reactions Popup
     function toggleReactionsPopup() {
       elements.reactionsPopup.classList.toggle("hidden");
-    }
-
-    // Toggle Virtual Background Popup
-    function toggleVirtualBackgroundPopup() {
-      elements.virtualBackgroundPopup.classList.toggle("hidden");
     }
 
     // Send Chat Message
