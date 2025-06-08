@@ -460,7 +460,7 @@ function setMeetingEndTimeout(room) {
   }
 
 
-  const timeoutDuration = 5 * 60 * 1000; // 5 minute
+  const timeoutDuration = 1 * 60 * 1000; // 1 minute
 
   roomData.endTimeout = setTimeout(async () => {
     try {
@@ -468,7 +468,7 @@ function setMeetingEndTimeout(room) {
       if (roomDataCheck && roomDataCheck.users.length === 0) {
         await db.execute('UPDATE meetings SET is_ended = TRUE WHERE room = ?', [room]);
         rooms.delete(room);
-        console.log(`Meeting ${room} marked as ended after 5 minute of no activity`);
+        console.log(`Meeting ${room} marked as ended after 1 minute of no activity`);
       }
     } catch (err) {
       console.error('Error ending meeting after timeout:', err);
