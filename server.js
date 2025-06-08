@@ -99,11 +99,24 @@ io.on('connection', (socket) => {
 
   socket.on('check-room', async (room, cb) => {
     try {
-      const [rows] = await db.execute('SELECT 1 FROM meetings WHERE room = ?', [room]);
-      cb(rows.length > 0);
+      // Check if the meeting exists
+      const [existenceRows] = await db.execute('SELECT 1 FROM meetings WHERE room = ?', [room]);
+      if (existenceRows.length === 0) {
+        cb({ exists: false, isEnded: false });
+        return;
+      }
+
+      // If exists, get the is_ended status
+      const [statusRows] = await db.execute('SELECT is_ended FROM meetings WHERE room = ?', [room]);
+      if (statusRows.length > 0) {
+        cb({ exists: true, isEnded: statusRows[0].is_ended });
+      } else {
+        // This case is unlikely since existence was confirmed, but handle for robustness
+        cb({ exists: false, isEnded: false });
+      }
     } catch (error) {
       console.error('Error checking room in database:', error);
-      cb(false);
+      cb({ exists: false, isEnded: false });
     }
   });
 
