@@ -608,11 +608,7 @@
       await fetchSession();
       await fetchRecentMeetings();
       sessionId = getSessionId();
-      if (!sessionId) {
-        showNotification('No session found. Please log in.');
-        window.location.href = 'https://webtesst.ct.ws/contents/admin/login.php';
-        return;
-      }
+ 
 
       newMeetingBtn.addEventListener('click', showNewMeetingModal);
       confirmNewMeetingBtn.addEventListener('click', startNewMeeting);
