@@ -1619,29 +1619,28 @@
     }
 
     // Combine Audio Streams
-    function combineAudioStreams(micStream, systemStream) {
-      if (!micStream && !systemStream) return null;
-      if (!micStream) return systemStream;
-      if (!systemStream) return micStream;
+    function combineAudioStreams(micStream, screenStream) {
+      if (!micStream && !screenStream) return null;
 
       const audioContext = new AudioContext();
       const destination = audioContext.createMediaStreamDestination();
 
-      if (micStream.getAudioTracks().length > 0) {
+      // Add microphone audio if available
+      if (micStream && micStream.getAudioTracks().length > 0) {
         const micSource = audioContext.createMediaStreamSource(micStream);
-        const gainNode = audioContext.createGain();
-        gainNode.gain.value = 0.8;
-        micSource.connect(gainNode);
-        gainNode.connect(destination);
-        mediaState.activeAudioTrack = destination.stream.getAudioTracks()[0];
+        const micGain = audioContext.createGain();
+        micGain.gain.value = 0.8; // Adjust mic volume
+        micSource.connect(micGain);
+        micGain.connect(destination);
       }
 
-      if (systemStream.getAudioTracks().length > 0) {
-        const systemSource = audioContext.createMediaStreamSource(systemStream);
-        const gainNode = audioContext.createGain();
-        gainNode.gain.value = 1.0;
-        systemSource.connect(gainNode);
-        gainNode.connect(destination);
+      // Add system audio if available
+      if (screenStream && screenStream.getAudioTracks().length > 0) {
+        const screenSource = audioContext.createMediaStreamSource(screenStream);
+        const screenGain = audioContext.createGain();
+        screenGain.gain.value = 1.0; // Adjust system audio volume
+        screenSource.connect(screenGain);
+        screenGain.connect(destination);
       }
 
       return destination.stream;
@@ -1667,13 +1666,15 @@
           video.play().catch(err => console.error(err));
         }
 
+        // Handle initials overlay for all participants when camera is off and not screen sharing
         if (isCameraOff && !isSharing) {
           video?.classList.add("hidden");
           if (!initialsOverlay) {
             const initialsDiv = document.createElement("div");
-            initialsDiv.className = "initials-overlay absolute inset-0 flex items-center justify-center";
+            initialsDiv.className = `initials-overlay absolute inset-0 flex items-center justify-center ${participantId === state.focusedParticipant ? "text-4xl" : "text-2xl"
+              }`;
             const initialsSpan = document.createElement("span");
-            initialsSpan.className = "text-white text-4xl font-bold bg-blue-600 rounded-full w-20 h-20 flex items-center justify-center select-none";
+            initialsSpan.className = "text-white text-4xl font-bold bg-blue-600 rounded-full w-20 h-20 flex items-center justify-center shadow-lg select-none";
             initialsSpan.textContent = initials;
             initialsDiv.appendChild(initialsSpan);
             wrapper.appendChild(initialsDiv);
@@ -1720,12 +1721,14 @@
         video.play().catch((err) => console.error(err));
       }
 
+      // Create initials overlay for all participants when camera is off and not screen sharing
       if (isCameraOff && !isSharing) {
         video.classList.add("hidden");
         const initialsDiv = document.createElement("div");
-        initialsDiv.className = "initials-overlay absolute inset-0 flex items-center justify-center";
+        initialsDiv.className = `initials-overlay absolute inset-0 flex items-center justify-center ${participantId === state.focusedParticipant ? "text-4xl" : "text-2xl"
+          }`;
         const initialsSpan = document.createElement("span");
-        initialsSpan.className = "text-white text-4xl font-bold bg-blue-600 rounded-full w-20 h-20 flex items-center justify-center select-none";
+        initialsSpan.className = "text-white text-4xl font-bold bg-blue-600 rounded-full w-20 h-20 flex items-center justify-center shadow-lg select-none";
         initialsSpan.textContent = initials;
         initialsDiv.appendChild(initialsSpan);
         videoWrapper.appendChild(initialsDiv);
@@ -2007,15 +2010,16 @@
     async function toggleScreenShare() {
       try {
         if (!state.isScreenSharing) {
+          // Start screen sharing
           const screenStream = await navigator.mediaDevices.getDisplayMedia({
             video: true,
-            audio: true, // Include system audio if available
+            audio: true, // Request system audio
           });
 
           state.screenStream = screenStream;
           state.isScreenSharing = true;
 
-          // Create a combined stream with video from screen and audio from mic (and system audio if available)
+          // Create a combined stream for video and audio
           const combinedStream = new MediaStream();
 
           // Add screen video track
@@ -2023,47 +2027,47 @@
             combinedStream.addTrack(screenStream.getVideoTracks()[0]);
           }
 
-          // Add microphone audio track if available
-          if (state.localStream && state.localStream.getAudioTracks().length > 0) {
-            const micTrack = state.localStream.getAudioTracks()[0];
-            combinedStream.addTrack(micTrack);
-          }
-
-          // Add system audio track if available
+          // Combine microphone and system audio
+          let audioStream;
           if (screenStream.getAudioTracks().length > 0) {
-            combinedStream.addTrack(screenStream.getAudioTracks()[0]);
+            // System audio is available, combine with mic
+            audioStream = combineAudioStreams(state.micStream, screenStream);
+          } else {
+            // No system audio, use mic stream only
+            audioStream = state.micStream;
           }
 
-          // Replace tracks in existing peer connections
+          // Add the combined audio track to the stream
+          if (audioStream && audioStream.getAudioTracks().length > 0) {
+            combinedStream.addTrack(audioStream.getAudioTracks()[0]);
+          } else if (state.localStream && state.localStream.getAudioTracks().length > 0) {
+            // Fallback to original mic track if combineAudioStreams fails
+            combinedStream.addTrack(state.localStream.getAudioTracks()[0]);
+          }
+
+          // Store the combined audio track for reference
+          mediaState.activeAudioTrack = audioStream ? audioStream.getAudioTracks()[0] : state.localStream?.getAudioTracks()[0] || null;
+
+          // Update peer connections
           state.peers.forEach((peer, id) => {
-            // Replace video track
+            // Replace or add video track
             const videoSender = peer.getSenders().find((s) => s.track?.kind === "video");
             if (videoSender && screenStream.getVideoTracks()[0]) {
-              videoSender.replaceTrack(screenStream.getVideoTracks()[0]);
+              videoSender.replaceTrack(screenStream.getVideoTracks()[0]).catch((err) => {
+                console.error(`Failed to replace video track for peer ${id}:`, err);
+              });
             } else if (screenStream.getVideoTracks()[0]) {
               peer.addTrack(screenStream.getVideoTracks()[0], combinedStream);
             }
 
-            // Replace or add microphone audio track
+            // Replace or add combined audio track
             const audioSender = peer.getSenders().find((s) => s.track?.kind === "audio");
-            if (state.localStream && state.localStream.getAudioTracks().length > 0) {
-              const micTrack = state.localStream.getAudioTracks()[0];
-              if (audioSender) {
-                audioSender.replaceTrack(micTrack);
-              } else {
-                peer.addTrack(micTrack, combinedStream);
-              }
-            }
-
-            // Replace or add system audio track if available
-            if (screenStream.getAudioTracks().length > 0) {
-              const systemAudioTrack = screenStream.getAudioTracks()[0];
-              const systemAudioSender = peer.getSenders().find((s) => s.track?.kind === "audio" && s.track !== micTrack);
-              if (systemAudioSender) {
-                systemAudioSender.replaceTrack(systemAudioTrack);
-              } else {
-                peer.addTrack(systemAudioTrack, combinedStream);
-              }
+            if (audioSender && mediaState.activeAudioTrack) {
+              audioSender.replaceTrack(mediaState.activeAudioTrack).catch((err) => {
+                console.error(`Failed to replace audio track for peer ${id}:`, err);
+              });
+            } else if (mediaState.activeAudioTrack) {
+              peer.addTrack(mediaState.activeAudioTrack, combinedStream);
             }
           });
 
@@ -2075,58 +2079,24 @@
           screenShareVideo.classList.remove("camera-video"); // Ensure no flip
           screenShareVideo.play().catch((err) => console.error("Screen share video play failed:", err));
 
+          // Create video element for screen sharing
           createVideoElement("local", userName, combinedStream, true, true);
           socket.emit("screen-share", { room, sharing: true, participantId: socket.id });
           elements.screenShareBtn.innerHTML = `<i class="fas fa-stop-circle"></i>`;
+
+          // Handle screen share termination (e.g., user stops sharing via browser)
+          screenStream.getVideoTracks()[0].onended = () => {
+            stopScreenShare();
+          };
         } else {
           // Stop screen sharing
-          if (state.screenStream) {
-            state.screenStream.getTracks().forEach((track) => track.stop());
-            state.screenStream = null;
-          }
-          state.isScreenSharing = false;
-
-          // Restore original video and audio tracks
-          if (state.localStream) {
-            const videoTrack = state.localStream.getVideoTracks()[0];
-            const audioTrack = state.localStream.getAudioTracks()[0];
-
-            state.peers.forEach((peer, id) => {
-              // Restore video track
-              const videoSender = peer.getSenders().find((s) => s.track?.kind === "video");
-              if (videoSender && videoTrack) {
-                videoSender.replaceTrack(videoTrack);
-              } else if (videoTrack) {
-                peer.addTrack(videoTrack, state.localStream);
-              }
-
-              // Restore audio track
-              const audioSender = peer.getSenders().find((s) => s.track?.kind === "audio");
-              if (audioSender && audioTrack) {
-                audioSender.replaceTrack(audioTrack);
-              } else if (audioTrack) {
-                peer.addTrack(audioTrack, state.localStream);
-              }
-            });
-          }
-
-          elements.screenShareOverlay.classList.add("hidden");
-          createVideoElement("local", userName, state.localStream, true, false);
-          socket.emit("screen-share", { room, sharing: false, participantId: socket.id });
-          elements.screenShareBtn.innerHTML = `<i class="fas fa-desktop"></i>`;
+          stopScreenShare();
         }
-        updateParticipantList();
       } catch (error) {
         console.error("Error toggling screen share:", error);
         showNotification("Failed to toggle screen share");
         if (state.isScreenSharing) {
-          // Cleanup on error
-          state.screenStream?.getTracks().forEach((track) => track.stop());
-          state.screenStream = null;
-          state.isScreenSharing = false;
-          elements.screenShareOverlay.classList.add("hidden");
-          socket.emit("screen-share", { room, sharing: false, participantId: socket.id });
-          elements.screenShareBtn.innerHTML = `<i class="fas fa-desktop"></i>`;
+          stopScreenShare();
         }
       }
     }
@@ -2142,44 +2112,42 @@
         state.screenStream = null;
       }
 
-      // Restore original video and audio tracks
-      if (state.localStream) {
-        mediaState.activeVideoTrack = state.localStream.getVideoTracks()[0] || null;
-        mediaState.activeAudioTrack = state.localStream.getAudioTracks()[0] || null;
-
-        state.peers.forEach((pc, id) => {
-          // Restore video track
-          const videoSender = pc.getSenders().find((s) => s.track?.kind === "video");
-          if (videoSender && mediaState.activeVideoTrack) {
-            videoSender.replaceTrack(mediaState.activeVideoTrack).catch((err) => {
-              console.error(`Failed to restore video track for peer ${id}:`, err);
-            });
-          } else if (mediaState.activeVideoTrack) {
-            pc.addTrack(mediaState.activeVideoTrack, state.localStream);
-          }
-
-          // Restore audio track
-          const audioSender = pc.getSenders().find((s) => s.track?.kind === "audio");
-          if (audioSender && mediaState.activeAudioTrack) {
-            audioSender.replaceTrack(mediaState.activeAudioTrack).catch((err) => {
-              console.error(`Failed to restore audio track for peer ${id}:`, err);
-            });
-          } else if (mediaState.activeAudioTrack) {
-            pc.addTrack(mediaState.activeAudioTrack, state.localStream);
-          }
-        });
-      }
-
-      createVideoElement("local", userName, state.localStream, true, false);
-
-      elements.screenShareOverlay.classList.add("hidden");
+      // Restore original audio and video tracks
       state.isScreenSharing = false;
-      state.screenSharingParticipant = null;
-      elements.screenShareBtn.innerHTML = '<i class="fas fa-desktop"></i>';
-      showNotification("Screen sharing stopped");
+      mediaState.activeVideoTrack = state.localStream?.getVideoTracks()[0] || null;
+      mediaState.activeAudioTrack = state.localStream?.getAudioTracks()[0] || null;
+
+      // Update peer connections
+      state.peers.forEach((peer, id) => {
+        // Restore video track
+        const videoSender = peer.getSenders().find((s) => s.track?.kind === "video");
+        if (videoSender && mediaState.activeVideoTrack) {
+          videoSender.replaceTrack(mediaState.activeVideoTrack).catch((err) => {
+            console.error(`Failed to restore video track for peer ${id}:`, err);
+          });
+        } else if (mediaState.activeVideoTrack) {
+          peer.addTrack(mediaState.activeVideoTrack, state.localStream);
+        }
+
+        // Restore audio track
+        const audioSender = peer.getSenders().find((s) => s.track?.kind === "audio");
+        if (audioSender && mediaState.activeAudioTrack) {
+          audioSender.replaceTrack(mediaState.activeAudioTrack).catch((err) => {
+            console.error(`Failed to restore audio track for peer ${id}:`, err);
+          });
+        } else if (mediaState.activeAudioTrack) {
+          peer.addTrack(mediaState.activeAudioTrack, state.localStream);
+        }
+      });
+
+      // Update local video element with initials overlay if camera is off
+      createVideoElement("local", userName, state.localStream, true, false);
+      socket.emit("screen-share", { room, sharing: false, participantId: socket.id });
+      elements.screenShareBtn.innerHTML = `<i class="fas fa-desktop"></i>`;
+      showNotification("You stopped screen sharing");
 
       updateParticipantList();
-      socket.emit("screen-share", { room, sharing: false, participantId: socket.id });
+      updateVideoGridLayout();
     }
 
     // Setup More Options
@@ -2806,9 +2774,10 @@
           minute: "2-digit",
           hour12: true,
         });
-        const chatMessageContent = { name: userName, messageContent, time };
-        socket.emit("chat-message", { room, ...chatMessage });
-        addChatMessages(chatMessageContent);
+        const chatMessage = { name: userName, message: messageContent, time }; // Corrected variable name
+        socket.emit("chat-message", { room, ...chatMessage }); // Emit the correct structure
+        addChatMessages(chatMessage); // Add message locally
+        showNotification(`${sanitizeInput(userName)} sent a message`); // Show notification for sender
         elements.chatInput.value = "";
         socket.emit("stop-typing", { room, name: userName });
       } else {
@@ -2818,7 +2787,11 @@
 
     // Add Chat Message
     function addChatMessages(chatMessageContent) {
-      state.chatMessages.push(chatMessageContent);
+      state.chatMessages.push({
+        name: sanitizeInput(chatMessageContent.name),
+        message: sanitizeInput(chatMessageContent.message),
+        time: chatMessageContent.time,
+      });
       renderChatMessages();
     }
 
@@ -2888,11 +2861,11 @@
     // Send Reaction
     function sendReaction(emoji) {
       socket.emit("reaction", { room, emoji, name: userName });
-      showReaction(emoji);
+      showReaction(emoji, userName); // Pass userName to showReaction
     }
 
     // Show Reaction
-    function showReaction(emoji) {
+    function showReaction(emoji, name = userName) {
       const reactionDiv = document.createElement("div");
       reactionDiv.className = "reaction-animation";
       reactionDiv.textContent = emoji;
@@ -2966,7 +2939,9 @@
 
     // Show Notification
     function showNotification(message) {
-      elements.notificationMessage.textContent = sanitizeInput(message);
+      // Replace userName with "You" for local user notifications
+      const displayMessage = message.replace(sanitizeInput(userName), "You");
+      elements.notificationMessage.textContent = sanitizeInput(displayMessage);
       if (notificationTimeout) {
         clearTimeout(notificationTimeout);
       }
@@ -3201,11 +3176,18 @@
         }
       };
 
+      // Add tracks based on screen sharing state
       if (state.isScreenSharing && state.screenStream) {
-        state.screenStream.getTracks().forEach((track) => {
-          pc.addTrack(track, state.screenStream);
-        });
+        // Add screen video track
+        if (state.screenStream.getVideoTracks().length > 0) {
+          pc.addTrack(state.screenStream.getVideoTracks()[0], state.screenStream);
+        }
+        // Add combined audio track
+        if (mediaState.activeAudioTrack) {
+          pc.addTrack(mediaState.activeAudioTrack, state.screenStream);
+        }
       } else if (state.localStream) {
+        // Add regular video and audio tracks
         state.localStream.getTracks().forEach((track) => {
           pc.addTrack(track, state.localStream);
         });
@@ -3221,11 +3203,10 @@
           event.streams[0].getTracks().forEach((track) => {
             state.peerStreams.get(peerId).addTrack(track);
           });
-          // Ensure remote audio is not muted unless explicitly toggled
           const isScreenSharing = state.screenSharingParticipant === peerId;
           createVideoElement(peerId, state.peerStreams.get(peerId).name, state.peerStreams.get(peerId), false, isScreenSharing);
           addParticipant(peerId, state.peerStreams.get(peerId).name, false, false, isScreenSharing);
-          const videoElement = document.getElementById(`video-${peerId}`);
+          const videoElement = document.getElementById(`video-container-${peerId}`)?.querySelector("video");
           if (videoElement && !isScreenSharing) {
             videoElement.muted = false; // Ensure remote audio is playable
             videoElement.play().catch((err) => console.error(`Video play failed for ${peerId}:`, err));
@@ -3385,10 +3366,8 @@
 
       socket.on("user-toggled-video", ({ id, isVideoOn }) => {
         state.cameraStatus.set(id, isVideoOn); // Track video status
-
         const stream = state.peerStreams.get(id);
         const name = state.participantNames.get(id) || "User";
-
         createVideoElement(id, name, stream, false); // Re-render their tile
       });
 
@@ -3484,6 +3463,7 @@
             participantId === socket.id,
             false // Not screen-sharing
           );
+          showNotification(`${participantId === socket.id ? "You" : sanitizeInput(name || "Anonymous")} stopped screen sharing`);
         }
         updateParticipantList();
         updateVideoGridLayout();
@@ -3520,21 +3500,18 @@
         updateParticipantList();
       });
 
-      socket.on("chat-message", (chatMessageContent) => {
+      socket.on("chat-message", (chatMessage) => {
+        // Add the received message to the chat
         addChatMessages({
-          name: sanitizeInput(chatMessageContent.name),
-          message: sanitizeInput(chatMessageContent.message),
-          time: new Date().toLocaleTimeString([], {
-            hour: "2-digit",
-            minute: "2-digit",
-            hour12: true,
-          }),
+          name: sanitizeInput(chatMessage.name),
+          message: sanitizeInput(chatMessage.message),
+          time: chatMessage.time, // Use the time from the sender
         });
+        // Show notification for other users' messages
+        if (chatMessage.name !== userName) {
+          showNotification(`${sanitizeInput(chatMessage.name)} sent a message`);
+        }
       });
-
-
-
-
 
 
       socket.on("typing", ({ name }) => {
@@ -3548,7 +3525,7 @@
       });
 
       socket.on("reaction", ({ emoji, name }) => {
-        showReaction(sanitizeInput(emoji));
+        showReaction(sanitizeInput(emoji), sanitizeInput(name));
       });
 
       socket.on("update-meeting-options", (options) => {

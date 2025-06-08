@@ -10,9 +10,9 @@ const app = express();
 const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
-    origin: "*",
-    methods: ["GET", "POST"]
-  }
+    origin: '*',
+    methods: ['GET', 'POST'],
+  },
 });
 
 // MySQL connection configuration
@@ -20,7 +20,7 @@ const dbConfig = {
   host: 'localhost',
   user: 'root',
   password: 'gOkulnathalagesan08@',
-  database: 'meetings_db'
+  database: 'meetings_db',
 };
 
 // Initialize MySQL connection pool
@@ -39,7 +39,7 @@ async function initializeDatabase() {
         title VARCHAR(255),
         details TEXT,
         participants JSON,
-        screen_sharing_participant JSON, -- Added to store screen-sharing state
+        screen_sharing_participant JSON,
         is_ended BOOLEAN DEFAULT FALSE,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         UNIQUE KEY uk_room (room)
@@ -80,7 +80,7 @@ app.get('/meet', (req, res) => {
 // Fetch recent meetings (handled by PHP in recent-meetings.php)
 app.get('/api/recent-meetings', async (req, res) => {
   try {
-    const sessionId = req.headers.cookie?.split(';').find(c => c.trim().startsWith('PHPSESSID='))?.split('=')[1];
+    const sessionId = req.headers.cookie?.split(';').find((c) => c.trim().startsWith('PHPSESSID='))?.split('=')[1];
     if (!sessionId) {
       return res.status(401).json({ error: 'No session found' });
     }
@@ -110,7 +110,14 @@ io.on('connection', (socket) => {
   socket.on('join-room', async ({ room, name, sessionId, title, isVideoOn, isMicOn }, callback) => {
     try {
       let roomExistsInDb = false;
-      const [rows] = await db.execute('SELECT details, participants, screen_sharing_participant FROM meetings WHERE room = ?', [room]);
+      const [rows] = await db.execute('SELECT is_ended, details, participants, screen_sharing_participant FROM meetings WHERE room = ?', [room]);
+
+      // Check if the meeting is already ended
+      if (rows.length > 0 && rows[0].is_ended) {
+        if (callback) callback({ error: 'This meeting has already ended.' });
+        return;
+      }
+
       roomExistsInDb = rows.length > 0;
 
       if (!rooms.has(room)) {
@@ -120,7 +127,9 @@ io.on('connection', (socket) => {
 
         if (roomExistsInDb) {
           const { details, participants, screen_sharing_participant } = rows[0];
-          try { meetingOptions = details ? JSON.parse(details) : meetingOptions; } catch { }
+          try {
+            meetingOptions = details ? JSON.parse(details) : meetingOptions;
+          } catch { }
           try {
             if (participants) {
               users = Array.isArray(JSON.parse(participants)) ? JSON.parse(participants) : [];
@@ -140,57 +149,64 @@ io.on('connection', (socket) => {
           users,
           screenSharingParticipant,
           meetingOptions,
-          endTimeout: null // initialize
+          endTimeout: null,
         });
       }
 
       const roomData = rooms.get(room);
 
-      // ✅ Clear pending end timeout if someone rejoins
+      // Clear pending end timeout if someone rejoins
       if (roomData.endTimeout) {
         clearTimeout(roomData.endTimeout);
         roomData.endTimeout = null;
         console.log(`End timeout cleared because ${socket.id} rejoined ${room}`);
       }
 
-      await db.execute(
-        'INSERT INTO participants (room_id, participant_id, participant_name) VALUES (?, ?, ?)',
-        [room, socket.id, name || 'Anonymous']
-      );
+      await db.execute('INSERT INTO participants (room_id, participant_id, participant_name) VALUES (?, ?, ?)', [
+        room,
+        socket.id,
+        name || 'Anonymous',
+      ]);
 
-      if (roomData.meetingOptions.lockMeeting && !roomData.users.some(u => u.id === socket.id)) {
+      if (roomData.meetingOptions.lockMeeting && !roomData.users.some((u) => u.id === socket.id)) {
         socket.emit('end-meeting', { reason: 'Meeting is locked' });
         if (callback) callback({ error: 'Meeting is locked' });
         return;
       }
 
+      // Add user with media status
       roomData.users.push({
         id: socket.id,
         name: name || 'Anonymous',
-        isMicOn: isMicOn ?? true,
-        isVideoOn: isVideoOn ?? false,
+        isMicOn: isMicOn ?? !roomData.meetingOptions.muteOnJoin, // Respect muteOnJoin
+        isVideoOn: isVideoOn ?? !roomData.meetingOptions.videoOffOnJoin, // Respect videoOffOnJoin
+        isHost: roomData.users.length === 0, // First user is host
       });
 
       socket.join(room);
 
-      await db.execute(
-        'UPDATE meetings SET participants = ? WHERE room = ?',
-        [JSON.stringify(roomData.users), room]
-      );
+      // Update participants in database
+      await db.execute('UPDATE meetings SET participants = ? WHERE room = ?', [JSON.stringify(roomData.users), room]);
 
+      // Broadcast user-connected with media status
       socket.to(room).emit('user-connected', {
         id: socket.id,
-        name,
-        isVideoOn: isVideoOn || false,
-        isMicOn: isMicOn ?? true,
+        name: name || 'Anonymous',
+        isHost: roomData.users.length === 1, // First user is host
+        isVideoOn: isVideoOn ?? !roomData.meetingOptions.videoOffOnJoin,
+        isMicOn: isMicOn ?? !roomData.meetingOptions.muteOnJoin,
       });
 
-      const usersInRoom = roomData.users.filter(u => u.id !== socket.id).map(u => ({
-        id: u.id,
-        name: u.name,
-        isMicOn: u.isMicOn ?? true,
-        isVideoOn: u.isVideoOn ?? false,
-      }));
+      // Send all users with their media status to the new joiner
+      const usersInRoom = roomData.users
+        .filter((u) => u.id !== socket.id)
+        .map((u) => ({
+          id: u.id,
+          name: u.name,
+          isMicOn: u.isMicOn,
+          isVideoOn: u.isVideoOn,
+          isHost: u.isHost,
+        }));
 
       const screenSharingParticipant = roomData.screenSharingParticipant
         ? { id: roomData.screenSharingParticipant.id, name: roomData.screenSharingParticipant.name }
@@ -200,7 +216,6 @@ io.on('connection', (socket) => {
       socket.emit('get-meeting-options', roomData.meetingOptions);
 
       if (callback) callback({ success: true, screenSharingParticipant });
-
     } catch (error) {
       console.error('Error in join-room:', error);
       socket.emit('error', { message: 'Database error' });
@@ -208,10 +223,9 @@ io.on('connection', (socket) => {
     }
   });
 
-
-
   socket.on('signal', ({ to, signal, name }) => {
-    const roomData = rooms.get(Array.from(socket.rooms).find(r => r !== socket.id));
+    const room = Array.from(socket.rooms).find((r) => r !== socket.id);
+    const roomData = rooms.get(room);
     io.to(to).emit('signal', {
       from: socket.id,
       signal,
@@ -219,11 +233,33 @@ io.on('connection', (socket) => {
     });
   });
 
-  socket.on("toggle-mic", ({ room, isMicOn }) => {
-    socket.to(room).emit("mic-toggled", { id: socket.id, isMicOn });
+  socket.on('toggle-video', async ({ room, isVideoOn }) => {
+    const roomData = rooms.get(room);
+    if (roomData) {
+      const user = roomData.users.find((u) => u.id === socket.id);
+      if (user) {
+        user.isVideoOn = isVideoOn;
+        // Update database
+        await db.execute('UPDATE meetings SET participants = ? WHERE room = ?', [JSON.stringify(roomData.users), room]);
+        // Broadcast to others
+        socket.to(room).emit('user-toggled-video', { id: socket.id, isVideoOn });
+      }
+    }
   });
 
-
+  socket.on('toggle-mic', async ({ room, isMicOn }) => {
+    const roomData = rooms.get(room);
+    if (roomData) {
+      const user = roomData.users.find((u) => u.id === socket.id);
+      if (user) {
+        user.isMicOn = isMicOn;
+        // Update database
+        await db.execute('UPDATE meetings SET participants = ? WHERE room = ?', [JSON.stringify(roomData.users), room]);
+        // Broadcast to others
+        socket.to(room).emit('mic-toggled', { id: socket.id, isMicOn });
+      }
+    }
+  });
 
   socket.on('update-name', async ({ room, name }) => {
     const roomData = rooms.get(room);
@@ -232,13 +268,8 @@ io.on('connection', (socket) => {
       if (user) {
         user.name = name || 'Anonymous';
         socket.to(room).emit('update-name', { participantId: socket.id, name });
-        // Update participants in database
         try {
-          await db.execute(
-            'UPDATE meetings SET participants = ? WHERE room = ?',
-            [JSON.stringify(roomData.users), room] // Ensure valid JSON
-          );
-          // Update participant name in participants table
+          await db.execute('UPDATE meetings SET participants = ? WHERE room = ?', [JSON.stringify(roomData.users), room]);
           await db.execute(
             'UPDATE participants SET participant_name = ? WHERE room_id = ? AND participant_id = ? AND out_time IS NULL',
             [name || 'Anonymous', room, socket.id]
@@ -263,12 +294,11 @@ io.on('connection', (socket) => {
       roomData.meetingOptions = { lockMeeting, muteOnJoin, videoOffOnJoin };
       socket.to(room).emit('update-meeting-options', { lockMeeting, muteOnJoin, videoOffOnJoin });
       io.to(room).emit('apply-meeting-options', { lockMeeting, muteOnJoin, videoOffOnJoin });
-      // Update meeting details in database
       try {
-        await db.execute(
-          'UPDATE meetings SET details = ? WHERE room = ?',
-          [JSON.stringify({ lockMeeting, muteOnJoin, videoOffOnJoin }), room]
-        );
+        await db.execute('UPDATE meetings SET details = ? WHERE room = ?', [
+          JSON.stringify({ lockMeeting, muteOnJoin, videoOffOnJoin }),
+          room,
+        ]);
       } catch (error) {
         console.error('Error updating meeting details in database:', error);
       }
@@ -296,10 +326,10 @@ io.on('connection', (socket) => {
         ? { id: participantId, name: roomData.users.find((u) => u.id === participantId)?.name || 'Anonymous' }
         : null;
       try {
-        await db.execute(
-          'UPDATE meetings SET screen_sharing_participant = ? WHERE room = ?',
-          [JSON.stringify(roomData.screenSharingParticipant), room]
-        );
+        await db.execute('UPDATE meetings SET screen_sharing_participant = ? WHERE room = ?', [
+          JSON.stringify(roomData.screenSharingParticipant),
+          room,
+        ]);
       } catch (error) {
         console.error('Error updating screen_sharing_participant in database:', error);
       }
@@ -328,28 +358,15 @@ io.on('connection', (socket) => {
         return;
       }
 
-      // Verify if the requester is the host (first user in the room)
       const isHost = roomData.users[0]?.id === socket.id;
-      if (!isHost) {
-        callback?.({ error: 'Only the host can end the meeting' });
-        return;
-      }
 
-      // Broadcast meeting-ended event to all clients in the room
       io.to(room).emit('end-meeting');
 
-      // Update meeting status in the database
       await db.execute('UPDATE meetings SET is_ended = TRUE WHERE room = ?', [room]);
+      await db.execute('UPDATE participants SET out_time = NOW() WHERE room_id = ? AND out_time IS NULL', [room]);
 
-      // Update out_time for all participants who haven't left yet
-      await db.execute(
-        'UPDATE participants SET out_time = NOW() WHERE room_id = ? AND out_time IS NULL',
-        [room]
-      );
-
-      // Clean up room data
       if (roomData.endTimeout) {
-        clearTimeout(roomData.endTimeout); // Clear any existing timeout
+        clearTimeout(roomData.endTimeout);
       }
       rooms.delete(room);
 
@@ -366,21 +383,6 @@ io.on('connection', (socket) => {
     socket.to(room).emit('toggle-hand', { participantId: socket.id, raised });
   });
 
-  socket.on('toggle-mic', ({ room, micOn }) => {
-    socket.to(room).emit('toggle-mic', { participantId: socket.id, micOn });
-  });
-
-  socket.on('toggle-camera', ({ room, cameraOn }) => {
-    socket.to(room).emit('toggle-camera', { participantId: socket.id, cameraOn });
-  });
-
-  socket.on('toggle-video', ({ room, isVideoOn }) => {
-    socket.to(room).emit('user-toggled-video', {
-      id: socket.id,
-      isVideoOn
-    });
-  });
-
   socket.on('toggle-remote-mute', ({ room, participantId }) => {
     io.to(participantId).emit('toggle-remote-mute', { participantId });
   });
@@ -391,12 +393,13 @@ io.on('connection', (socket) => {
 
   socket.on('disconnect', async () => {
     for (const [room, roomData] of rooms.entries()) {
-      const userIndex = roomData.users.findIndex(u => u.id === socket.id);
+      const userIndex = roomData.users.findIndex((u) => u.id === socket.id);
       if (userIndex !== -1) {
         const userName = roomData.users[userIndex].name;
         roomData.users.splice(userIndex, 1);
         socket.to(room).emit('user-disconnected', socket.id);
 
+        // Stop screen share if this user was sharing
         if (roomData.screenSharingParticipant?.id === socket.id) {
           roomData.screenSharingParticipant = null;
           socket.to(room).emit('screen-share', { participantId: socket.id, sharing: false });
@@ -408,10 +411,7 @@ io.on('connection', (socket) => {
         }
 
         try {
-          await db.execute(
-            'UPDATE meetings SET participants = ? WHERE room = ?',
-            [JSON.stringify(roomData.users), room]
-          );
+          await db.execute('UPDATE meetings SET participants = ? WHERE room = ?', [JSON.stringify(roomData.users), room]);
           await db.execute(
             'UPDATE participants SET out_time = NOW() WHERE room_id = ? AND participant_id = ? AND out_time IS NULL',
             [room, socket.id]
@@ -420,23 +420,10 @@ io.on('connection', (socket) => {
           const [rows] = await db.execute('SELECT is_ended FROM meetings WHERE room = ?', [room]);
           const isEnded = rows.length > 0 && rows[0].is_ended;
 
-          // ✅ Set timeout only if room is empty
           if (roomData.users.length === 0 && !isEnded) {
-            const timeoutDuration = 5 * 60 * 1000;
-            roomData.endTimeout = setTimeout(async () => {
-              try {
-                const roomDataCheck = rooms.get(room);
-                if (roomDataCheck && roomDataCheck.users.length === 0) {
-                  await db.execute('UPDATE meetings SET is_ended = TRUE WHERE room = ?', [room]);
-                  rooms.delete(room);
-                  console.log(`Meeting ${room} marked as ended after 5 minutes of no activity`);
-                }
-              } catch (err) {
-                console.error('Error ending meeting after timeout:', err);
-              }
-            }, timeoutDuration);
-            console.log(`End timeout set for room ${room}`);
+            setMeetingEndTimeout(room);
           }
+
         } catch (err) {
           console.error('Error on disconnect DB update:', err);
         }
@@ -447,6 +434,37 @@ io.on('connection', (socket) => {
   });
 
 });
+
+function setMeetingEndTimeout(room) {
+  const roomData = rooms.get(room);
+  if (!roomData) return;
+
+  // Clear any existing timeout to avoid duplicates
+  if (roomData.endTimeout) {
+    clearTimeout(roomData.endTimeout);
+    roomData.endTimeout = null;
+    console.log(`End timeout cleared because ${socket.id} rejoined ${room}`);
+  }
+
+
+  const timeoutDuration = 5 * 60 * 1000; // 5 minute
+
+  roomData.endTimeout = setTimeout(async () => {
+    try {
+      const roomDataCheck = rooms.get(room);
+      if (roomDataCheck && roomDataCheck.users.length === 0) {
+        await db.execute('UPDATE meetings SET is_ended = TRUE WHERE room = ?', [room]);
+        rooms.delete(room);
+        console.log(`Meeting ${room} marked as ended after 5 minute of no activity`);
+      }
+    } catch (err) {
+      console.error('Error ending meeting after timeout:', err);
+    }
+  }, timeoutDuration);
+
+  console.log(`End timeout set for room ${room}`);
+}
+
 
 // Start server on HTTP
 server.listen(3000, '0.0.0.0', () => {
