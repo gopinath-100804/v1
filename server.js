@@ -17,10 +17,10 @@ const io = new Server(server, {
 
 // MySQL connection configuration
 const dbConfig = {
-  host: 'sql113.infinityfree.com',
-  user: 'if0_38733197',
-  password: 'gokulnath08',
-  database: 'if0_38733197_meetings_db',
+  host: 'localhost',
+  user: 'root',
+  password: 'gOkulnathalagesan08@',
+  database: 'meetings_db',
 };
 
 // Initialize MySQL connection pool
