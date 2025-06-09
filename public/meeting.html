@@ -1140,7 +1140,6 @@
 
     // DOM Elements
     const elements = {
-      // ... other elements ...
       meetingScreen: document.getElementById("meeting-screen"),
       homeButton: document.getElementById("home-button"),
       meetingIdDisplay: document.getElementById("meeting-id"),
@@ -1492,7 +1491,7 @@
                 track.enabled = false;
               });
             }
-            elements.micToggle.innerHTML = `<i class="fas fa-microphone-slash"></i>`;
+            elements.micToggle.innerHTML = `<i class="fas text-red-500 fa-microphone-slash"></i>`;
           }
           if (state.meetingOptions.videoOffOnJoin) {
             state.isCameraOn = false;
@@ -1501,7 +1500,7 @@
                 track.enabled = false;
               });
             }
-            elements.cameraToggle.innerHTML = `<i class="fas fa-video-slash"></i>`;
+            elements.cameraToggle.innerHTML = `<i class="fas text-red-500 fa-video-slash"></i>`;
           }
 
           socket.emit("get-meeting-options", { room });
@@ -1540,8 +1539,8 @@
         state.isCameraOn = mediaState.videoEnabled && !state.meetingOptions.videoOffOnJoin;
         state.isMicOn = mediaState.audioEnabled && !state.meetingOptions.muteOnJoin;
 
-        elements.cameraToggle.innerHTML = `<i class="fas ${state.isCameraOn ? "fa-video text-green-400" : "fa-video-slash"}"></i>`;
-        elements.micToggle.innerHTML = `<i class="fas ${state.isMicOn ? "fa-microphone text-green-400" : "fa-microphone-slash"}"></i>`;
+        elements.cameraToggle.innerHTML = `<i class="fas ${state.isCameraOn ? "fa-video text-green-400" : "text-red-500 fa-video-slash"}"></i>`;
+        elements.micToggle.innerHTML = `<i class="fas ${state.isMicOn ? "fa-microphone text-green-400" : "text-red-500 fa-microphone-slash"}"></i>`;
       } catch (err) {
         if (mediaState.videoEnabled) {
           try {
@@ -1636,6 +1635,7 @@
 
         const micIcon = existingContainer.querySelector(".participant-controls i");
         if (micIcon) {
+          // Update mic icon based on mic status
           micIcon.className = `fas ${isMicOn ? "fa-microphone text-green-400" : "fa-microphone-slash text-red-500"}`;
           micIcon.title = isMicOn ? "Mic On" : "Mic Off";
         }
@@ -1919,7 +1919,7 @@
         mediaState.activeVideoTrack.enabled = state.isCameraOn;
       }
 
-      elements.cameraToggle.innerHTML = `<i class="fas ${state.isCameraOn ? "fa-video text-green-400" : "fa-video-slash"}"></i>`;
+      elements.cameraToggle.innerHTML = `<i class="fas ${state.isCameraOn ? "fa-video text-green-400" : "text-red-500 fa-video-slash"}"></i>`;
 
       // Update initials overlay
       const localContainer = document.getElementById("video-container-local");
